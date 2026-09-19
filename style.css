@@ -512,7 +512,8 @@ body::before {
    --fixed-h は、ここで詰めたあとの、リール以外の高さの合計。 */
 @media (max-height: 700px) {
     :root {
-        --fixed-h: 312px;
+        /* 実際のリール以外の高さは約310px。30px分の余裕を見て、Safariのバーの高さの違いなどに備える。 */
+        --fixed-h: 340px;
     }
 
     .app {
