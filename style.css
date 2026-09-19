@@ -1,0 +1,476 @@
+:root {
+    --paper: #f5eedc;
+    --ink: #1d1512;
+    --gold: #d9b25f;
+    --gold-soft: rgba(217, 178, 95, 0.55);
+    --text: #f3e9d2;
+    --fs: clamp(16px, 4.6vw, 34px);
+    --card-h: clamp(76px, 17vw, 112px);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+}
+
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: radial-gradient(ellipse at 50% -10%, #3a1a1f 0%, #1a0f10 55%, #0e0808 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: "Shippori Mincho B1", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.app {
+    position: relative;
+    width: min(760px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 72px 0 56px;
+}
+
+/* アプリ名は目立たせない */
+.title {
+    margin: 0 0 26px;
+    font-size: clamp(22px, 6vw, 32px);
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    text-align: center;
+    opacity: 0.55;
+}
+
+/* 「～オーケストラ版～」はサブタイトルとして、小さく1行下に置く */
+.subtitle {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.5em;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+}
+
+/* オプションと音の切り替え。スマホで押しやすいよう、指で押せる大きさ（高さ48px）にしてある */
+.sound-toggle {
+    position: absolute;
+    top: 8px;
+    right: 0;
+    min-width: 96px;
+    min-height: 48px;
+    padding: 10px 20px;
+    border: 1px solid rgba(243, 233, 210, 0.4);
+    border-radius: 999px;
+    background: rgba(243, 233, 210, 0.06);
+    color: var(--text);
+    font: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    opacity: 0.85;
+    cursor: pointer;
+}
+
+.sound-toggle:active {
+    transform: scale(0.96);
+}
+
+.sound-toggle:hover {
+    opacity: 1;
+}
+
+.sound-toggle:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
+/* 音の切り替えと同じ見た目で、左上に置く */
+.options-toggle {
+    right: auto;
+    left: 0;
+}
+
+/* ---- リール ---- */
+
+.reels {
+    display: grid;
+    gap: 14px;
+}
+
+.card {
+    position: relative;
+    height: var(--card-h);
+    padding: 0 12px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.45),
+        inset 0 0 0 1px rgba(120, 90, 40, 0.25);
+}
+
+/* 上下を少し暗くして、筒が回っている感じを出す */
+.card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        rgba(70, 45, 20, 0.32),
+        transparent 24%,
+        transparent 76%,
+        rgba(70, 45, 20, 0.32)
+    );
+}
+
+.strip {
+    will-change: transform;
+}
+
+.card.fast .strip {
+    filter: blur(1.6px);
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--card-h);
+    font-size: var(--fs);
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.item span {
+    display: inline-block;
+}
+
+.item.placeholder {
+    opacity: 0.3;
+}
+
+/* ピタッと止まる */
+.card.thud {
+    animation: thud 0.18s ease-out;
+}
+
+@keyframes thud {
+    0% {
+        transform: scale(1);
+    }
+    35% {
+        transform: scale(1.022);
+        box-shadow:
+            0 10px 24px rgba(0, 0, 0, 0.45),
+            0 0 0 2px var(--gold-soft);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ---- ボタン ---- */
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 26px;
+}
+
+.actions-sub {
+    margin-top: 14px;
+}
+
+.button {
+    min-width: 168px;
+    padding: 14px 26px;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    font: inherit;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.button:active {
+    transform: scale(0.97);
+}
+
+.button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.button.primary {
+    background: var(--gold);
+    color: #2a1712;
+}
+
+.button.secondary {
+    background: transparent;
+    color: var(--gold);
+}
+
+.button[hidden] {
+    display: none;
+}
+
+/* ---- 音あり／なしの選択 ---- */
+
+.gate {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(10, 5, 5, 0.86);
+}
+
+.gate[hidden] {
+    display: none;
+}
+
+.gate-panel {
+    width: min(420px, 100%);
+    padding: 32px 24px 24px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 18px;
+    background: #1d1112;
+    text-align: center;
+}
+
+.gate-title {
+    margin: 0 0 22px;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.gate-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.gate-buttons .button {
+    min-width: 132px;
+}
+
+.gate-note {
+    margin: 18px 0 0;
+    font-size: 12px;
+    opacity: 0.5;
+}
+
+/* ---- 結果カードのポップアップ ---- */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+    background: rgba(10, 5, 5, 0.93);
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+.modal-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: min(100%, 520px);
+    margin: auto;
+    animation: pop 0.28s ease-out;
+}
+
+.card-image {
+    display: block;
+    width: 100%;
+    max-height: calc(100dvh - 240px);
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-actions .button {
+    min-width: 140px;
+    padding: 11px 20px;
+    font-size: 16px;
+}
+
+.modal-close {
+    padding: 4px 12px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    opacity: 1;
+}
+
+.modal-hint {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.6;
+    text-align: center;
+    opacity: 0.5;
+}
+
+/* ---- オプション画面 ---- */
+
+.options-panel {
+    width: min(100%, 520px);
+    margin: auto;
+    padding: 26px 22px 20px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 18px;
+    background: #1d1112;
+    animation: pop 0.28s ease-out;
+}
+
+.options-panel .gate-title {
+    text-align: center;
+}
+
+.options-lead {
+    margin: -8px 0 20px;
+    font-size: 13px;
+    line-height: 1.7;
+    text-align: center;
+    opacity: 0.6;
+}
+
+.option-group {
+    display: block;
+    min-width: 0;
+    margin: 0 0 18px;
+    padding: 0;
+    border: 0;
+}
+
+.option-group legend,
+.option-name > span {
+    display: block;
+    margin-bottom: 8px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.option-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    position: relative;
+}
+
+.chip input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.chip span {
+    display: block;
+    padding: 7px 14px;
+    border: 1px solid rgba(243, 233, 210, 0.3);
+    border-radius: 999px;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.chip input:checked + span {
+    border-color: var(--gold);
+    background: var(--gold);
+    color: #2a1712;
+    font-weight: 800;
+}
+
+.chip input:focus-visible + span {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.option-name input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid rgba(243, 233, 210, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    font: inherit;
+    font-size: 16px;
+}
+
+.option-name input::placeholder {
+    color: rgba(243, 233, 210, 0.35);
+}
+
+.options-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.options-actions .button {
+    min-width: 132px;
+    padding: 11px 20px;
+    font-size: 16px;
+}
+
+@keyframes pop {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.94);
+    }
+    100% {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card.thud,
+    .options-panel,
+    .modal-panel {
+        animation: none;
+    }
+}
