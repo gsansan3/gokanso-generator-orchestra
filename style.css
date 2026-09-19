@@ -17,21 +17,37 @@ body {
     margin: 0;
 }
 
+/* iPhoneでは、ステータスバーやツールバーの裏、引っ張ったときの余白に html の背景が見える。
+   何も指定しないと白くなるので、暗い単色を敷いておく。 */
+html {
+    background-color: #0e0808;
+    color-scheme: dark;
+}
+
 body {
     min-height: 100vh;
     min-height: 100dvh;
-    background: radial-gradient(ellipse at 50% -10%, #3a1a1f 0%, #1a0f10 55%, #0e0808 100%);
-    background-attachment: fixed;
     color: var(--text);
     font-family: "Shippori Mincho B1", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
     -webkit-font-smoothing: antialiased;
 }
 
+/* 背景のグラデーション。iPhoneは background-attachment: fixed が使えないので、画面に固定した層にする。 */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% -10%, #3a1a1f 0%, #1a0f10 55%, #0e0808 100%);
+}
+
+/* 画面の端（ノッチ・ホームバー）にできる余白の分だけ、内容をずらす */
 .app {
     position: relative;
-    width: min(760px, calc(100% - 32px));
+    width: min(760px, calc(100% - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)));
     margin: 0 auto;
-    padding: 72px 0 56px;
+    padding: calc(72px + env(safe-area-inset-top)) 0 calc(56px + env(safe-area-inset-bottom));
 }
 
 /* アプリ名は目立たせない */
@@ -57,7 +73,7 @@ body {
 /* オプションと音の切り替え。スマホで押しやすいよう、指で押せる大きさ（高さ48px）にしてある */
 .sound-toggle {
     position: absolute;
-    top: 8px;
+    top: calc(8px + env(safe-area-inset-top));
     right: 0;
     min-width: 96px;
     min-height: 48px;
@@ -234,7 +250,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+        max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
     background: rgba(10, 5, 5, 0.86);
 }
 
@@ -283,7 +300,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+        max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
     overflow-y: auto;
     background: rgba(10, 5, 5, 0.93);
 }
