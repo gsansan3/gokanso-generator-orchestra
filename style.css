@@ -5,7 +5,22 @@
     --gold-soft: rgba(217, 178, 95, 0.55);
     --text: #f3e9d2;
     --fs: clamp(16px, 4.6vw, 34px);
+    /* リール1本の高さ。基本は幅に合わせる（76〜112px） */
     --card-h: clamp(76px, 17vw, 112px);
+    /* リール以外（タイトル・ボタン・余白）が使う高さの合計。画面に収まるようリールを縮める計算に使う */
+    --fixed-h: 386px;
+}
+
+/* 背の低い画面（iPhone SE など）では、1画面に収まるよう、画面の高さに合わせてリールを縮める。
+   svh はブラウザのバーが出ている状態の高さなので、スクロールしても大きさが変わらない。 */
+@supports (height: 100svh) {
+    :root {
+        --card-h: clamp(
+            52px,
+            min(max(76px, 17vw), calc((100svh - var(--fixed-h) - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 3)),
+            112px
+        );
+    }
 }
 
 * {
@@ -490,5 +505,39 @@ body::before {
     .options-panel,
     .modal-panel {
         animation: none;
+    }
+}
+
+/* 背の低い画面（iPhone SE など）では、上下の余白を詰めて、リールをできるだけ大きく残す。
+   --fixed-h は、ここで詰めたあとの、リール以外の高さの合計。 */
+@media (max-height: 700px) {
+    :root {
+        --fixed-h: 312px;
+    }
+
+    .app {
+        padding-top: calc(64px + env(safe-area-inset-top));
+        padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .title {
+        margin-bottom: 18px;
+    }
+
+    .reels {
+        gap: 10px;
+    }
+
+    .actions {
+        margin-top: 18px;
+    }
+
+    .actions-sub {
+        margin-top: 10px;
+    }
+
+    .button {
+        padding-top: 12px;
+        padding-bottom: 12px;
     }
 }
