@@ -14,6 +14,9 @@
     // 1つめ → 2つめ → 3つめ → アンケート用紙が開く、までの間隔は、すべて同じ（STOP_INTERVAL_MS）にする。
     const FIRST_STOP_MS = 1600;
     const STOP_INTERVAL_MS = 800;
+    // 結果の効果音は、ハープの4音（タラらん）で始まり、その最後の音と同時に和音（チャーン）が鳴る。
+    // 和音が鳴るのは、カードが開くとき。ハープは、その分だけ早く鳴らし始める。
+    const RESULT_LEAD_MS = 300;
     // 各リールの回転時間(ms)と、その間に流れる行数。上→中→下の順に止まる。
     const SPIN_MS = [0, 1, 2].map((i) => FIRST_STOP_MS + i * STOP_INTERVAL_MS);
     const SPIN_ROWS = [14, 22, 30];
@@ -127,6 +130,9 @@
         const STOP_NOTES = [587.33, 739.99, 880.0];
         // 結果音は D メジャーの和音
         const CHORD = [146.83, 293.66, 369.99, 440.0, 587.33];
+        // 結果音の前に鳴らす、ハープの4音（D4 F#4 A4 D5）と、鳴らし始める時刻（秒）。最後の音が和音と同時
+        const HARP_NOTES = [293.66, 369.99, 440.0, 587.33];
+        const HARP_DELAYS = [0, 0.08, 0.16, RESULT_LEAD_MS / 1000];
 
         return {
             setEnabled(value) {
@@ -149,11 +155,19 @@
                 noise({ decay: 0.03, peak: 0.08, type: 'bandpass', freq: 1500 });
             },
             result() {
-                tone(110, { type: 'sine', decay: 0.6, peak: 0.35, bend: 70 });
-                CHORD.forEach((freq) => {
-                    tone(freq, { type: 'sawtooth', delay: 0.02, attack: 0.03, decay: 1.4, peak: 0.045, lowpass: 1400 });
+                // ハープ: D-dur の4音（D4 F#4 A4 D5）を、タラらんと駆け上がる。最後の音が、和音と重なる
+                const lead = RESULT_LEAD_MS / 1000;
+                HARP_NOTES.forEach((freq, i) => {
+                    const last = i === HARP_NOTES.length - 1;
+                    tone(freq, { delay: HARP_DELAYS[i], decay: last ? 1.3 : 0.7, peak: last ? 0.16 : 0.12, lowpass: 4500 });
                 });
-                noise({ delay: 0.02, attack: 0.01, decay: 0.9, peak: 0.05, type: 'highpass', freq: 6000 });
+                tone(HARP_NOTES[HARP_NOTES.length - 1] * 2, { type: 'sine', delay: lead, decay: 1.2, peak: 0.04 });
+                // 和音（チャーン）
+                tone(110, { type: 'sine', delay: lead, decay: 0.6, peak: 0.35, bend: 70 });
+                CHORD.forEach((freq) => {
+                    tone(freq, { type: 'sawtooth', delay: lead + 0.02, attack: 0.03, decay: 1.4, peak: 0.045, lowpass: 1400 });
+                });
+                noise({ delay: lead + 0.02, attack: 0.01, decay: 0.9, peak: 0.05, type: 'highpass', freq: 6000 });
             },
         };
     })();
@@ -834,12 +848,13 @@
 
         await Promise.all(reels.map((reel, i) => reel.spin(results[i], SPIN_MS[i], SPIN_ROWS[i])));
 
-        // 3つめが止まってから、リールどうしの間隔と同じだけ待って、
-        // 結果の効果音（チャーン）を鳴らし、カードを開く。
+        // 3つめが止まってから、リールどうしの間隔と同じだけ待って、カードを開く。
+        // 結果の効果音は、ハープ（タラらん）→ 和音（チャーン）の順で、和音がカードの開くときに鳴る。
         // 画面を描き替える処理（カードを開く）で音が遅れないよう、音を先に鳴らす。
-        await wait(STOP_INTERVAL_MS);
-        const blob = await cardBlob;
+        await wait(STOP_INTERVAL_MS - RESULT_LEAD_MS);
         Sound.result();
+        const blob = await cardBlob;
+        await wait(RESULT_LEAD_MS);
         if (blob) {
             setCardBlob(blob);
             cardButton.hidden = false;
