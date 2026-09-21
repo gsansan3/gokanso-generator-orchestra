@@ -382,6 +382,31 @@ body::before {
     opacity: 1;
 }
 
+/* シェアしたときのお知らせ。画面の上に浮かべるので、画像やボタンの位置は変わらず、ボタンにも重ならない */
+.toast {
+    position: fixed;
+    left: 50%;
+    top: calc(10px + env(safe-area-inset-top));
+    z-index: 30;
+    width: max-content;
+    max-width: calc(100% - 24px);
+    margin: 0;
+    padding: 9px 16px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 999px;
+    background: #1d1112;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+    text-align: center;
+    transform: translateX(-50%);
+}
+
+.toast[hidden] {
+    display: none;
+}
+
 /* ---- オプション画面 ---- */
 
 .options-panel {

@@ -1,8 +1,8 @@
 (() => {
     'use strict';
 
-    // シェア用のURL。空のときは現在のページURLを使う（file:// で開いているときはURLなし）。
-    const APP_URL = '';
+    // Xに投稿するときに、感想の下に付けるハッシュタグ
+    const SHARE_HASHTAG = '#ご感想ジェネレータ';
 
     const STORAGE_KEY = 'orchestra-happening:sound';
     const REEL_KEYS = ['reel1', 'reel2', 'reel3'];
@@ -301,8 +301,6 @@
     };
     const CARD_VISITS = ['初めて', '2〜5回', '6回以上'];
     const CARD_AGES = ['〜20代', '30代', '40代', '50代', '60代〜'];
-
-    const getShareUrl = () => APP_URL || (location.protocol.startsWith('http') ? location.origin + location.pathname : '');
 
     // 字間をあけて中央寄せで描く
     const drawSpaced = (ctx, text, centerX, y, spacing) => {
@@ -681,6 +679,7 @@
     const cardImage = document.getElementById('card-image');
     const cardSave = document.getElementById('card-save');
     const cardShare = document.getElementById('card-share');
+    const shareToast = document.getElementById('share-toast');
     const cardClose = document.getElementById('card-close');
     const optionsButton = document.getElementById('options-button');
     const optionsModal = document.getElementById('options-modal');
@@ -694,6 +693,7 @@
     let currentConcert = '';
     let currentSentence = '';
     let cardUrl = '';
+    let cardImageBlob = null; // 用紙のPNG画像。シェアするときに添付する
 
     const buildSentence = ([a, b, c]) => `${a}が、${b}、${c}。`;
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -777,6 +777,7 @@
     const setCardBlob = (blob) => {
         if (cardUrl) URL.revokeObjectURL(cardUrl);
         cardUrl = URL.createObjectURL(blob);
+        cardImageBlob = blob;
     };
 
     const openCard = () => {
@@ -846,18 +847,12 @@
             openCard();
         } else {
             cardUrl = '';
+            cardImageBlob = null;
         }
 
         spinButton.disabled = false;
         optionsButton.disabled = false;
         spinning = false;
-    };
-
-    const share = () => {
-        if (!currentSentence) return;
-        const url = getShareUrl();
-        const text = url ? `${currentSentence}\n${url}` : currentSentence;
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     };
 
     const saveCard = () => {
@@ -868,6 +863,54 @@
         document.body.append(link);
         link.click();
         link.remove();
+    };
+
+    // 画面の下に、数秒だけ表示するお知らせ
+    let toastTimer = 0;
+    const showToast = (message) => {
+        shareToast.textContent = message;
+        shareToast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            shareToast.hidden = true;
+        }, 6000);
+    };
+
+    // Xにシェアする。文章は「感想 + ハッシュタグ」で、URLは付けない。
+    // Xの投稿画面を開くリンクは、画像を付けられないので、次のように使い分ける。
+    //  ・スマホ: 端末の共有画面を開く。Xを選ぶと、画像と文章が付いた投稿画面になる。
+    //  ・パソコンなど: 画像をコピーして、Xの投稿画面を開く。投稿欄に貼り付けてもらう。
+    //    コピーできないときは、画像を保存して、添付してもらう。
+    const share = async () => {
+        if (!currentSentence) return;
+        const text = `${currentSentence}\n${SHARE_HASHTAG}`;
+        const file = cardImageBlob ? new File([cardImageBlob], 'gokanso.png', { type: 'image/png' }) : null;
+
+        if (file && matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({ files: [file], text });
+                return;
+            } catch (e) {
+                if (e && e.name === 'AbortError') return; // 共有画面を、自分で閉じた
+                // 共有画面が開けなかったときは、下のやり方に切り替える
+            }
+        }
+
+        let message = '';
+        if (cardImageBlob && navigator.clipboard && window.ClipboardItem) {
+            try {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': cardImageBlob })]);
+                message = '画像をコピーしました。投稿欄に貼り付けてください';
+            } catch (e) {
+                // コピーできなかったときは、下で画像を保存する
+            }
+        }
+        if (!message && cardUrl) {
+            saveCard();
+            message = '画像を保存しました。投稿に添付してください';
+        }
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+        if (message) showToast(message);
     };
 
     const applySound = (on) => {
