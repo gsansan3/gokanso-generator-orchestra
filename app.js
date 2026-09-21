@@ -291,6 +291,9 @@
     const HAND_FONT = '"TekitouPoem", "Yomogi", "Yu Kyokasho", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif';
     // サイトに置いているのは、TekitouPoem の Regular だけ。別の太さを指定すると、ブラウザが無理に太らせて字がつぶれるので、400 にそろえる。
     const HAND_WEIGHT = 400;
+    // 公演名と題字の大きさ。今ある公演名のうち、いちばん長いもの（23文字）が、幅に収まる大きさ。
+    // 公演名を足して、これより長いものができたら、この値を小さくする（reel-data.js の CONCERT_TITLES を参照）。
+    const CONCERT_FONT_SIZE = 31;
     const CARD_COLORS = {
         paper: '#f4f1e5',
         ink: '#161616',
@@ -560,9 +563,10 @@
         ctx.strokeRect(1, 1, CARD_W - 2, CARD_H - 2);
 
         // 見出し
-        // 演奏会の名前。長いときは、幅に収まるまで文字を小さくする。
+        // 公演名と題字（来場者アンケート）は、どの公演名でも同じ大きさ（CONCERT_FONT_SIZE）にする。
+        // 念のため、それでも幅に収まらない公演名のときだけ、収まるまで小さくする（そのときは題字も同じ大きさ）。
         const concertSpacing = 8;
-        let concertSize = 45; // 長い公演名は、下で幅に収まるまで小さくする。題字（来場者アンケート）も、同じ大きさにそろえる
+        let concertSize = CONCERT_FONT_SIZE;
         const concertWidth = () => {
             ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
             return [...concert].reduce((sum, ch) => sum + ctx.measureText(ch).width, 0) + concertSpacing * (concert.length - 1);
