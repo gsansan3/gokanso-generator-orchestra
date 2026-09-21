@@ -454,7 +454,7 @@
         const p2 = Math.random() * 6.28;
         const point = (i) => {
             const t = i / steps;
-            const angle = start - t * turns * Math.PI * 2; // 左回り（真下から、右、上、左の順）
+            const angle = start + t * turns * Math.PI * 2; // 右回り（真下から、左、上、右の順）
             const scale = 0.9 + 0.2 * t + 0.035 * Math.sin(2 * angle + p1) + 0.025 * Math.sin(3 * angle + p2);
             const x = rx * scale * Math.cos(angle);
             const y = ry * scale * Math.sin(angle);
