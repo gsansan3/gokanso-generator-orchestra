@@ -26,4 +26,4 @@ python -m venv .venv
 .venv/Scripts/python tools/build-font-subsets.py --font path/to/TekitouPoem.ttf
 ```
 
-作り直したら、`index.html` の `?v=` の版番号を新しくします。
+作り直したら、`index.html` の `?v=` の版番号と、`tools/build-font-subsets.py` の `FONT_VERSION` を、同じ新しい値にして、もう一度実行します。

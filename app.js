@@ -700,8 +700,8 @@
 
     const OPTIONS_KEY = 'orchestra-happening:options';
     const NAME_MAX_LENGTH = 10;
-    // 初期値は、どれも真ん中の選択肢（2〜5回、40代、満足度3）と、お名前「オケたろう」
-    const DEFAULT_OPTIONS = { visits: '1', age: '2', satisfaction: '3', name: 'オケたろう' };
+    // 初期値は、どれも真ん中の選択肢（2〜5回、40代、満足度3）と、お名前「拍手 喝采」
+    const DEFAULT_OPTIONS = { visits: '1', age: '2', satisfaction: '3', name: '拍手 喝采' };
     // 選択肢の並びは、カードに描く選択肢（CARD_VISITS など）と同じ
     const OPTION_FIELDS = [
         { key: 'visits', labels: CARD_VISITS },

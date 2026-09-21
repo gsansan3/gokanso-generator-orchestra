@@ -38,6 +38,13 @@ FULLWIDTH = (
 )
 
 
+# 初期のお名前（app.js の DEFAULT_OPTIONS.name）で使う漢字。最初から読み込むほうに入れておく
+DEFAULT_NAME_CHARS = set("拍手喝采")
+
+# フォントファイルの版番号。ブラウザに古いファイルを使い続けられないよう、作り直したら新しい値にする（index.html の ?v= と同じ値にする）
+FONT_VERSION = "20260921o"
+
+
 def reel_chars(reel_data_path):
     """reel-data.js のネタ（REEL_DATA の3本のリール）で使っている文字。公演名は、印刷用の明朝で描くので対象外。"""
     text = open(reel_data_path, encoding="utf-8").read().split("const CONCERT_TITLES")[0]
@@ -104,7 +111,7 @@ def main():
     args = parser.parse_args()
 
     os.makedirs(args.out, exist_ok=True)
-    base_wanted = reel_chars(args.data) | KANA | ASCII | PUNCT | FULLWIDTH
+    base_wanted = reel_chars(args.data) | DEFAULT_NAME_CHARS | KANA | ASCII | PUNCT | FULLWIDTH
     base_path = os.path.join(args.out, "TekitouPoem-base.woff2")
     base = write_subset(args.font, base_wanted, base_path)
 
@@ -121,7 +128,7 @@ def main():
 
 @font-face {{
     font-family: "TekitouPoem";
-    src: url("TekitouPoem-base.woff2") format("woff2");
+    src: url("TekitouPoem-base.woff2?v={FONT_VERSION}") format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -130,7 +137,7 @@ def main():
 
 @font-face {{
     font-family: "TekitouPoem";
-    src: url("TekitouPoem-kanji.woff2") format("woff2");
+    src: url("TekitouPoem-kanji.woff2?v={FONT_VERSION}") format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
