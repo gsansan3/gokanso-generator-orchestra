@@ -39,4 +39,4 @@ Xへのシェアには、開いているページのURLが自動で入ります�
 ## 補足
 
 - 効果音は、音源ファイルを使わず、ブラウザ内で合成しています。
-- フォントは Google Fonts（Shippori Mincho B1、Klee One）を読み込みます。
+- フォントは Google Fonts（Shippori Mincho B1、Yomogi）を読み込みます。

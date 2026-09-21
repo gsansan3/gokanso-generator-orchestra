@@ -335,13 +335,23 @@ body::before {
     animation: pop 0.28s ease-out;
 }
 
+/* アンケート用紙の画像は、幅と高さの両方が画面に収まる範囲で、できるだけ大きく見せる。
+   画像の下には、ボタン2つ・「閉じる」・それぞれの間隔（合計約100px）と、画面の上下の余白（約32px）がある。
+   その分（150px）を引いた高さまで使う。svh は、ブラウザのバーが出ている状態の高さ。 */
 .card-image {
     display: block;
-    width: 100%;
-    max-height: calc(100dvh - 240px);
-    object-fit: contain;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100vh - 150px);
     border-radius: 6px;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+@supports (height: 100svh) {
+    .card-image {
+        max-height: calc(100svh - 150px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
 }
 
 .modal-actions {
@@ -370,14 +380,6 @@ body::before {
 
 .modal-close:hover {
     opacity: 1;
-}
-
-.modal-hint {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1.6;
-    text-align: center;
-    opacity: 0.5;
 }
 
 /* ---- オプション画面 ---- */

@@ -271,7 +271,9 @@
     const CARD_H = 1350;
     // 印刷された部分は明朝、書き込まれた感想は手書き風のフォントにする
     const PRINT_FONT = '"Shippori Mincho B1", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif';
-    const HAND_FONT = '"Klee One", "Yu Kyokasho", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif';
+    const HAND_FONT = '"Yomogi", "Yu Kyokasho", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif';
+    // Yomogi は太さが1種類だけ。別の太さを指定すると、ブラウザが無理に太らせて字がつぶれるので、400 にそろえる。
+    const HAND_WEIGHT = 400;
     const CARD_COLORS = {
         paper: '#fbf8ef',
         ink: '#1d1512',
@@ -288,15 +290,13 @@
     // （演奏会の名前は、ネタとして reel-data.js の CONCERT_TITLES から選ぶ）
     const CARD_TEXT = {
         title: 'アンケート',
-        thanks: '本日はご来場ありがとうございました。',
-        ask: 'よりよい公演づくりのため、ご協力をお願いいたします。',
         visits: 'ご来場回数',
         age: 'ご年代',
         satisfaction: '本日の満足度',
         satisfactionNote: '1＝低い　5＝高い',
         free: 'ご意見・ご感想（自由記述）',
         name: 'お名前（任意）',
-        footnote: 'いただいたご意見は、今後の運営の参考にいたします。',
+        footnote: 'ご協力ありがとうございます。いただいたご意見は、今後の参考にいたします。',
     };
     const CARD_VISITS = ['初めて', '2〜5回', '6回以上'];
     const CARD_AGES = ['〜20代', '30代', '40代', '50代', '60代〜'];
@@ -340,7 +340,7 @@
     const NO_LINE_START = '、。，．」』）〕】！？ー・…';
     const NO_LINE_END = '「『（〔【';
 
-    const handFont = (size) => `600 ${size}px ${HAND_FONT}`;
+    const handFont = (size) => `${HAND_WEIGHT} ${size}px ${HAND_FONT}`;
 
     // group が同じ文字は「まとまり」として、できるだけ途中で折り返さない
     const toChars = (text, group) => [...text].map((ch) => ({ ch, group }));
@@ -444,7 +444,7 @@
         ctx.textAlign = 'center';
     };
 
-    // 1〜5の丸数字。選んだ番号には、赤ペンで手書きの丸を付ける
+    // 1〜5の数字。選んだ番号には、ペンで手書きの丸を付ける（印刷された丸は付けない）
     const drawSatisfactionRow = (ctx, label, note, chosen, y) => {
         ctx.textAlign = 'left';
         ctx.fillStyle = CARD_COLORS.ink;
@@ -455,11 +455,6 @@
         ctx.font = `700 26px ${PRINT_FONT}`;
         for (let n = 1; n <= 5; n++) {
             const cx = 310 + (n - 1) * 92;
-            ctx.strokeStyle = CARD_COLORS.ink;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(cx, y, 22, 0, Math.PI * 2);
-            ctx.stroke();
             ctx.fillStyle = CARD_COLORS.ink;
             ctx.fillText(String(n), cx, y + 1);
 
@@ -486,15 +481,15 @@
     };
 
     // Webフォントは文字ごとに分割配信されるので、カードに使う文字を指定して先に読み込む。
-    // 回線が遅いときに待たされすぎないよう、3秒で諦めて代替フォントで描く。
+    // 回線が遅いときに待ちすぎないよう、6秒で諦めて代替フォントで描く。
     const loadCardFonts = (printText, handText) =>
         Promise.race([
             Promise.all([
                 document.fonts.load(`800 40px ${PRINT_FONT}`, printText),
                 document.fonts.load(`700 40px ${PRINT_FONT}`, printText),
-                document.fonts.load(`600 40px ${HAND_FONT}`, handText),
+                document.fonts.load(`${HAND_WEIGHT} 40px ${HAND_FONT}`, handText),
             ]).catch(() => {}),
-            new Promise((resolve) => setTimeout(resolve, 3000)),
+            new Promise((resolve) => setTimeout(resolve, 6000)),
         ]);
 
     // オプション画面の値。'none'（無回答）ならどれにも印を付けない（-1）。
@@ -503,10 +498,9 @@
     const answerOf = (value) => (value === NO_ANSWER ? -1 : Number(value));
 
     const renderCard = async (parts, options, concert) => {
-        const url = getShareUrl();
         const sentence = parts.map((text, i) => text + CARD_CONNECTORS[i]).join('');
         await loadCardFonts(
-            `0123456789${Object.values(CARD_TEXT).join('')}${concert}${CARD_APP_NAME}${url}`,
+            `0123456789${Object.values(CARD_TEXT).join('')}${concert}${CARD_APP_NAME}`,
             sentence + options.name
         );
 
@@ -547,31 +541,26 @@
         ctx.fillStyle = CARD_COLORS.accent;
         ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
         drawSpaced(ctx, concert, cx, 108, concertSpacing);
+        // 「アンケート」の題字。大きすぎたので、以前（80px）の0.7倍にしてある。
         ctx.fillStyle = CARD_COLORS.ink;
-        ctx.font = `800 80px ${PRINT_FONT}`;
-        drawSpaced(ctx, CARD_TEXT.title, cx, 170, 22);
+        ctx.font = `800 56px ${PRINT_FONT}`;
+        drawSpaced(ctx, CARD_TEXT.title, cx, 172, 16);
         ctx.strokeStyle = CARD_COLORS.accent;
         ctx.fillStyle = CARD_COLORS.accent;
         ctx.lineWidth = 2;
-        drawRule(ctx, cx, 226, 330);
-        ctx.fillStyle = CARD_COLORS.ink;
-        ctx.font = `700 30px ${PRINT_FONT}`;
-        ctx.fillText(CARD_TEXT.thanks, cx, 272);
-        ctx.fillStyle = CARD_COLORS.muted;
-        ctx.font = `700 24px ${PRINT_FONT}`;
-        ctx.fillText(CARD_TEXT.ask, cx, 312);
+        drawRule(ctx, cx, 224, 330);
 
         // 選択式の設問（回答はオプション画面の設定。無回答なら印を付けない）
-        drawChoiceRow(ctx, CARD_TEXT.visits, CARD_VISITS, answerOf(options.visits), 372);
-        drawChoiceRow(ctx, CARD_TEXT.age, CARD_AGES, answerOf(options.age), 432);
-        drawSatisfactionRow(ctx, CARD_TEXT.satisfaction, CARD_TEXT.satisfactionNote, answerOf(options.satisfaction), 494);
+        drawChoiceRow(ctx, CARD_TEXT.visits, CARD_VISITS, answerOf(options.visits), 306);
+        drawChoiceRow(ctx, CARD_TEXT.age, CARD_AGES, answerOf(options.age), 376);
+        drawSatisfactionRow(ctx, CARD_TEXT.satisfaction, CARD_TEXT.satisfactionNote, answerOf(options.satisfaction), 448);
 
         // 自由記述欄
         const boxLeft = 90;
         const boxRight = CARD_W - 90;
-        const boxTop = 596;
-        // 罫線は4行。行の間隔を広げて、記入欄全体の高さは5行のときと同じにしてある。
-        const lineGap = 110;
+        const boxTop = 548;
+        // 罫線は4行。上の文言を減らした分、行の間隔を広げて、用紙全体に余白が偏らないようにしてある。
+        const lineGap = 124;
         const lineCount = 4;
         const boxBottom = boxTop + lineGap * lineCount + 20;
 
@@ -657,11 +646,6 @@
         ctx.fillStyle = CARD_COLORS.ink;
         ctx.font = `800 28px ${PRINT_FONT}`;
         drawSpaced(ctx, CARD_APP_NAME, cx, boxBottom + 176, 4);
-        if (url) {
-            ctx.fillStyle = CARD_COLORS.muted;
-            ctx.font = `700 22px ${PRINT_FONT}`;
-            ctx.fillText(url, cx, boxBottom + 214);
-        }
 
         return new Promise((resolve, reject) => {
             canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/png');
@@ -931,6 +915,22 @@
         if (!optionsModal.hidden) closeOptions();
         else closeCard();
     });
+
+    // 用紙を描くときに、手書き風フォントの読み込みを待たされないよう、
+    // 感想に使う文字のフォントを、ページを開いたあとに先に読み込んでおく（失敗しても動作には影響しない）。
+    const prefetchHandFont = () => {
+        const chars = new Set(CARD_CONNECTORS.join(''));
+        for (const list of Object.values(REEL_DATA)) {
+            for (const text of list) [...text].forEach((ch) => chars.add(ch));
+        }
+        document.fonts.load(`${HAND_WEIGHT} 40px ${HAND_FONT}`, [...chars].join('')).catch(() => {});
+    };
+    const prefetchWhenIdle = () => {
+        if ('requestIdleCallback' in window) requestIdleCallback(prefetchHandFont, { timeout: 4000 });
+        else setTimeout(prefetchHandFont, 1500);
+    };
+    if (document.readyState === 'complete') prefetchWhenIdle();
+    else window.addEventListener('load', prefetchWhenIdle);
 
     window.addEventListener('resize', () => {
         if (!spinning) reels.forEach((reel) => reel.refit());
