@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Xカード用の画像を作る</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  body { margin: 16px; font-family: sans-serif; background: #222; color: #eee; }
+  canvas { max-width: 100%; height: auto; display: block; margin: 12px 0; border: 1px solid #555; }
+  a { color: #ffd479; }
+</style>
+</head>
+<body>
+<!--
+  Xカード用の画像（1200×600、縦横 2:1）を作るページ。
+  リールを回す画面のうち、「ご感想ジェネレータ」の見出しから、3段目のリールまでを、横長に描く。
+  色や形は style.css に合わせてあるが、画面のスクリーンショットではなく、Canvasで描き直したもの。
+  使い方: ローカルサーバーで、このページを開く。画像が表示されるので、「画像を保存」から保存する。
+  ネタを変えるときは、下の CARD を書き換える。
+-->
+<p><a id="save" download="ogp.png">画像を保存</a></p>
+<canvas id="c" width="1200" height="600"></canvas>
+<script>
+// ★ここを書き換える。リール1〜3に止まっている文（つなぎの「が、」「、」は、画面と同じく自動で付く）
+const CARD = {
+    title: 'ご感想ジェネレータ',
+    subtitle: '～オーケストラ版～',
+    reels: ['後ろからの咳', '故郷の夕焼けを思い出させ', '泣き笑いが止まりませんでした'],
+};
+
+const W = 1200, H = 600;
+const SUFFIXES = ['が、', '、', ''];
+const FONT = '"Shippori Mincho B1", "Yu Mincho", "Hiragino Mincho ProN", serif';
+const C = { paper: '#f5eedc', ink: '#1d1512', text: '#f3e9d2' };
+
+// 角丸の四角
+const roundRect = (ctx, x, y, w, h, r) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+};
+
+// 字間をあけて中央寄せで描く
+const drawSpaced = (ctx, text, centerX, y, spacing) => {
+    const chars = [...text];
+    const widths = chars.map((ch) => ctx.measureText(ch).width);
+    let x = centerX - (widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1)) / 2;
+    ctx.textAlign = 'left';
+    chars.forEach((ch, i) => {
+        ctx.fillText(ch, x, y);
+        x += widths[i] + spacing;
+    });
+};
+
+(async () => {
+    const texts = CARD.reels.map((t, i) => t + SUFFIXES[i]);
+    await Promise.all([
+        document.fonts.load(`800 40px ${FONT}`, CARD.title + CARD.subtitle + texts.join('')),
+        document.fonts.load(`700 40px ${FONT}`, CARD.subtitle),
+    ]);
+
+    const ctx = document.getElementById('c').getContext('2d');
+    ctx.textBaseline = 'middle';
+
+    // 背景（style.css の body::before と同じ、上から広がる暗い赤茶のグラデーション）
+    ctx.fillStyle = '#0e0808';
+    ctx.fillRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(W / 2, -0.1 * H);
+    ctx.scale(0.91, 1);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 930);
+    g.addColorStop(0, '#3a1a1f');
+    g.addColorStop(0.55, '#1a0f10');
+    g.addColorStop(1, '#0e0808');
+    ctx.fillStyle = g;
+    ctx.fillRect(-W, -H, W * 2, H * 3);
+    ctx.restore();
+
+    // 見出し（画面と同じく、薄く見せる）
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = C.text;
+    ctx.font = `800 46px ${FONT}`;
+    drawSpaced(ctx, CARD.title, W / 2, 56, 4.6);
+    ctx.font = `700 23px ${FONT}`;
+    drawSpaced(ctx, CARD.subtitle, W / 2, 106, 4.6);
+    ctx.restore();
+
+    // リール3本
+    const cardW = 1000, cardH = 128, gap = 16, left = (W - cardW) / 2, top0 = 146;
+    texts.forEach((text, i) => {
+        const x = left, y = top0 + (cardH + gap) * i;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 10;
+        roundRect(ctx, x, y, cardW, cardH, 16);
+        ctx.fillStyle = C.paper;
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        roundRect(ctx, x, y, cardW, cardH, 16);
+        ctx.clip();
+        // 上下を少し暗くして、筒が回っている感じを出す
+        const shade = ctx.createLinearGradient(0, y, 0, y + cardH);
+        shade.addColorStop(0, 'rgba(70, 45, 20, 0.32)');
+        shade.addColorStop(0.24, 'rgba(70, 45, 20, 0)');
+        shade.addColorStop(0.76, 'rgba(70, 45, 20, 0)');
+        shade.addColorStop(1, 'rgba(70, 45, 20, 0.32)');
+        ctx.fillStyle = shade;
+        ctx.fillRect(x, y, cardW, cardH);
+        ctx.restore();
+        roundRect(ctx, x + 0.5, y + 0.5, cardW - 1, cardH - 1, 16);
+        ctx.strokeStyle = 'rgba(120, 90, 40, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = C.ink;
+        ctx.font = `800 48px ${FONT}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(text, W / 2, y + cardH / 2 + 2);
+    });
+
+    const link = document.getElementById('save');
+    document.getElementById('c').toBlob((blob) => {
+        link.href = URL.createObjectURL(blob);
+        window.ogpBlob = blob;
+    }, 'image/png');
+})();
+</script>
+</body>
+</html>

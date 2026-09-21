@@ -29,6 +29,8 @@ python -m http.server 8000
 | `reel-data.js` | ネタのデータ（リール3本の文章と、アンケート用紙に載る公演名） |
 | `fonts/` | 手書き風フォント TekitouPoem（必要な文字だけに絞ったもの）と、そのライセンス文 |
 | `tools/build-font-subsets.py` | `fonts/` の中身を作るスクリプト |
+| `ogp.png` | Xなどでリンクを貼ったときに出る画像（1200×600）。`index.html` のメタタグから読み込む |
+| `tools/make-ogp.html` | `ogp.png` を作るページ。ローカルサーバーで開いて、画像を保存する |
 
 ## ネタを足す
 
