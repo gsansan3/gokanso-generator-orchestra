@@ -891,9 +891,9 @@
             spinButton.disabled = false;
             spinning = false;
         } else {
-            // 自動で開かない設定のときは、待たずに、3つめが止まった瞬間に効果音を鳴らして、
-            // すぐに次を回せるようにする。カードは、できしだい、ボタンから開けるようにする。
-            Sound.result();
+            // 自動で開かない設定のときは、待たずに、3つめが止まった瞬間から、すぐに次を回せるようにする。
+            // 結果の効果音は、アンケート用紙が開くときのものなので、鳴らさない。
+            // カードは、できしだい、ボタンから開けるようにする。
             spinButton.disabled = false;
             spinning = false;
             cardBlob.then(showCard);
