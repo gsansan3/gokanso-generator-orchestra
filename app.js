@@ -579,11 +579,12 @@
         ctx.fillStyle = CARD_COLORS.ink;
         ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
         drawSpaced(ctx, CARD_TEXT.title, cx, 172, 16);
+        // 横線は、公演名と題字のあいだ（2つの文字の中央の高さ）に引く
         ctx.strokeStyle = CARD_COLORS.ink;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(cx - 330, 224);
-        ctx.lineTo(cx + 330, 224);
+        ctx.moveTo(cx - 330, (108 + 172) / 2);
+        ctx.lineTo(cx + 330, (108 + 172) / 2);
         ctx.stroke();
 
         // 選択式の設問（回答はオプション画面の設定。無回答なら印を付けない）
