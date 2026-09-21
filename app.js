@@ -279,7 +279,6 @@
         muted: '#7a6c55',
         rule: '#c9bb9c',
         pen: '#1f3a8a',
-        red: '#d0342c',
     };
     // リールの結果につなぐ文字。画面のリールと同じ。
     const CARD_CONNECTORS = ['が、', '、', '。'];
@@ -466,7 +465,7 @@
 
             if (n === chosen) {
                 ctx.save();
-                ctx.strokeStyle = CARD_COLORS.red;
+                ctx.strokeStyle = CARD_COLORS.pen;
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
@@ -683,7 +682,6 @@
     const optionsButton = document.getElementById('options-button');
     const optionsModal = document.getElementById('options-modal');
     const optionName = document.getElementById('option-name');
-    const optionsReset = document.getElementById('options-reset');
     const optionsClose = document.getElementById('options-close');
 
     const reels = Array.from(document.querySelectorAll('.reel-row')).map((row, i) => new Reel(i, row));
@@ -926,12 +924,6 @@
         options.name = optionName.value.slice(0, NAME_MAX_LENGTH);
         optionsChanged = true;
         saveOptions();
-    });
-    optionsReset.addEventListener('click', () => {
-        options = { ...DEFAULT_OPTIONS };
-        optionsChanged = true;
-        saveOptions();
-        syncOptionInputs();
     });
 
     document.addEventListener('keydown', (event) => {

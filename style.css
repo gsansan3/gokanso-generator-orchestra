@@ -396,14 +396,6 @@ body::before {
     text-align: center;
 }
 
-.options-lead {
-    margin: -8px 0 20px;
-    font-size: 13px;
-    line-height: 1.7;
-    text-align: center;
-    opacity: 0.6;
-}
-
 .option-group {
     display: block;
     min-width: 0;
@@ -478,7 +470,7 @@ body::before {
 .options-actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 12px;
     margin-top: 6px;
 }
@@ -555,14 +547,8 @@ body::before {
         font-size: 19px;
     }
 
-    .options-lead {
-        margin: 0 0 10px;
-        font-size: 12px;
-        line-height: 1.5;
-    }
-
     .option-group {
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
     .option-group legend,
@@ -576,7 +562,7 @@ body::before {
     }
 
     .chip span {
-        padding: 10px 11px;
+        padding: 14px 11px;
         font-size: 13px;
     }
 
@@ -592,8 +578,46 @@ body::before {
         padding-top: 11px;
         padding-bottom: 11px;
     }
+}
 
-    #options-reset {
-        min-height: 40px;
+/* 幅の狭い画面（スマホ）では、ご年代の選択肢が1行に収まるよう、パネルを画面いっぱいに広げ、
+   ボタンの左右の余白を詰める。ボタンは、行の幅いっぱいに広げて、押しやすくする。 */
+@media (max-width: 480px) {
+    #options-modal {
+        padding-left: max(8px, env(safe-area-inset-left));
+        padding-right: max(8px, env(safe-area-inset-right));
+    }
+
+    .options-panel {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .option-choices {
+        gap: 4px;
+    }
+
+    .option-choices .chip {
+        flex: 1 1 auto;
+    }
+
+    .chip span {
+        padding-left: 6px;
+        padding-right: 6px;
+        text-align: center;
+    }
+
+    /* 満足度の 1〜5 は、同じ幅にそろえて、押し間違いにくくする（「無回答」は文字の幅のまま） */
+    .option-group[data-option="satisfaction"] .chip {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .option-group[data-option="satisfaction"] .chip:first-child {
+        flex: 0 0 auto;
+    }
+
+    .chip span {
+        white-space: nowrap;
     }
 }

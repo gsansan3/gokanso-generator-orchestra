@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Klee+One:wght@600&display=swap" rel="stylesheet">
     <!-- ?v= は、ブラウザに古いファイルを使い続けられないための版番号。style.css・app.js・reel-data.js を変えたら、3か所とも新しい値にする -->
-    <link rel="stylesheet" href="style.css?v=20260921b">
+    <link rel="stylesheet" href="style.css?v=20260921d">
 </head>
 <body>
     <main class="app">
@@ -50,8 +50,6 @@
     <div id="options-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="options-title" hidden>
         <div class="options-panel">
             <p id="options-title" class="gate-title">オプション</p>
-            <p class="options-lead">アンケート用紙の記入欄を選べます。選ばなければ「無回答」で、印を付けません。</p>
-
             <fieldset class="option-group" data-option="visits">
                 <legend>ご来場回数</legend>
                 <div class="option-choices"></div>
@@ -70,7 +68,6 @@
             </label>
 
             <div class="options-actions">
-                <button type="button" id="options-reset" class="modal-close">初期状態に戻す</button>
                 <button type="button" id="options-close" class="button primary">閉じる</button>
             </div>
         </div>
@@ -87,7 +84,7 @@
         </div>
     </div>
 
-    <script src="reel-data.js?v=20260921b"></script>
-    <script src="app.js?v=20260921b"></script>
+    <script src="reel-data.js?v=20260921d"></script>
+    <script src="app.js?v=20260921d"></script>
 </body>
 </html>
