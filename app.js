@@ -276,11 +276,12 @@
     // サイトに置いているのは、TekitouPoem の Regular だけ。別の太さを指定すると、ブラウザが無理に太らせて字がつぶれるので、400 にそろえる。
     const HAND_WEIGHT = 400;
     const CARD_COLORS = {
-        paper: '#fbf8ef',
-        ink: '#1d1512',
-        accent: '#8b2a35',
-        muted: '#7a6c55',
-        rule: '#c9bb9c',
+        paper: '#ffffff',
+        ink: '#161616',
+        accent: '#161616',
+        muted: '#5a5a5a',
+        rule: '#9b9b9b',
+        edge: '#d2d2d2',
         pen: '#1f3a8a',
     };
     // リールの結果につなぐ文字。画面のリールと同じ。
@@ -314,23 +315,6 @@
             x += widths[i] + spacing;
         });
         ctx.textAlign = 'center';
-    };
-
-    // 中央に菱形をあしらった横罫線
-    const drawRule = (ctx, centerX, y, halfWidth) => {
-        ctx.beginPath();
-        ctx.moveTo(centerX - halfWidth, y);
-        ctx.lineTo(centerX - 16, y);
-        ctx.moveTo(centerX + 16, y);
-        ctx.lineTo(centerX + halfWidth, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(centerX, y - 7);
-        ctx.lineTo(centerX + 7, y);
-        ctx.lineTo(centerX, y + 7);
-        ctx.lineTo(centerX - 7, y);
-        ctx.closePath();
-        ctx.fill();
     };
 
     // ---- 感想の折り返し（Canvasは自動で折り返さないので自前で行う） ----
@@ -551,22 +535,12 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // 紙
+        // 紙（コピー用紙のような、飾りのない白）。画像の縁が背景に溶けないよう、ごく薄い縁だけ付ける
         ctx.fillStyle = CARD_COLORS.paper;
         ctx.fillRect(0, 0, CARD_W, CARD_H);
-        const glow = ctx.createRadialGradient(cx, CARD_H * 0.4, 100, cx, CARD_H * 0.4, CARD_H * 0.8);
-        glow.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
-        glow.addColorStop(1, 'rgba(120, 80, 30, 0.08)');
-        ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, CARD_W, CARD_H);
-
-        // 枠
-        ctx.strokeStyle = CARD_COLORS.accent;
-        ctx.lineWidth = 5;
-        ctx.strokeRect(36, 36, CARD_W - 72, CARD_H - 72);
-        ctx.strokeStyle = CARD_COLORS.rule;
+        ctx.strokeStyle = CARD_COLORS.edge;
         ctx.lineWidth = 2;
-        ctx.strokeRect(52, 52, CARD_W - 104, CARD_H - 104);
+        ctx.strokeRect(1, 1, CARD_W - 2, CARD_H - 2);
 
         // 見出し
         // 演奏会の名前。長いときは、幅に収まるまで文字を小さくする。
@@ -584,10 +558,12 @@
         ctx.fillStyle = CARD_COLORS.ink;
         ctx.font = `800 56px ${PRINT_FONT}`;
         drawSpaced(ctx, CARD_TEXT.title, cx, 172, 16);
-        ctx.strokeStyle = CARD_COLORS.accent;
-        ctx.fillStyle = CARD_COLORS.accent;
+        ctx.strokeStyle = CARD_COLORS.ink;
         ctx.lineWidth = 2;
-        drawRule(ctx, cx, 224, 330);
+        ctx.beginPath();
+        ctx.moveTo(cx - 330, 224);
+        ctx.lineTo(cx + 330, 224);
+        ctx.stroke();
 
         // 選択式の設問（回答はオプション画面の設定。無回答なら印を付けない）
         drawChoiceRow(ctx, CARD_TEXT.visits, CARD_VISITS, answerOf(options.visits), 306);
