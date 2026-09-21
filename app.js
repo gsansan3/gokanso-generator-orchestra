@@ -276,7 +276,7 @@
     // サイトに置いているのは、TekitouPoem の Regular だけ。別の太さを指定すると、ブラウザが無理に太らせて字がつぶれるので、400 にそろえる。
     const HAND_WEIGHT = 400;
     const CARD_COLORS = {
-        paper: '#ffffff',
+        paper: '#f4f4f2',
         ink: '#161616',
         accent: '#161616',
         muted: '#5a5a5a',
@@ -296,7 +296,7 @@
         age: 'ご年代',
         satisfaction: '本日の満足度',
         satisfactionNote: '1＝低い　5＝高い',
-        free: 'ご意見・ご感想（自由記述）',
+        free: 'ご意見・ご感想',
         name: 'お名前（任意）',
         footnote: 'ご協力ありがとうございます。いただいたご意見は、今後の参考にいたします。',
     };
@@ -535,9 +535,18 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // 紙（コピー用紙のような、飾りのない白）。画像の縁が背景に溶けないよう、ごく薄い縁だけ付ける
+        // 紙（コピー用紙のような、飾りのない白）。ほのかに感じる程度の、ざらつきを付ける。
+        // 画像の縁が背景に溶けないよう、ごく薄い縁も付ける
         ctx.fillStyle = CARD_COLORS.paper;
         ctx.fillRect(0, 0, CARD_W, CARD_H);
+        const grain = ctx.getImageData(0, 0, CARD_W, CARD_H);
+        for (let i = 0; i < grain.data.length; i += 4) {
+            const n = Math.round((Math.random() - 0.5) * 7);
+            grain.data[i] += n;
+            grain.data[i + 1] += n;
+            grain.data[i + 2] += n;
+        }
+        ctx.putImageData(grain, 0, 0);
         ctx.strokeStyle = CARD_COLORS.edge;
         ctx.lineWidth = 2;
         ctx.strokeRect(1, 1, CARD_W - 2, CARD_H - 2);
