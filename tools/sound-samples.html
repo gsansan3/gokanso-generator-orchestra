@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>効果音の候補</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; padding: 20px 16px 60px; background: #0e0808; color: #f3e9d2; font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif; }
+  main { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  p.lead { margin: 0 0 18px; font-size: 14px; line-height: 1.7; opacity: .8; }
+  .row { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid rgba(243, 233, 210, .18); }
+  .row button { flex: none; width: 88px; min-height: 48px; border: 1px solid #d9b25f; border-radius: 999px; background: transparent; color: #f3e9d2; font: inherit; font-size: 16px; font-weight: 700; }
+  .row button:active { background: #d9b25f; color: #1d1512; }
+  .name { font-size: 16px; font-weight: 700; }
+  .desc { font-size: 13px; line-height: 1.6; opacity: .75; }
+  .no { display: inline-block; min-width: 1.6em; color: #d9b25f; }
+</style>
+</head>
+<body>
+<main>
+  <h1>アンケートが開くときの効果音（候補）</h1>
+  <p class="lead">「聞く」を押すと鳴ります。どれも、アプリと同じ方法（ブラウザでの音の合成）で作った音です。iPhoneは、マナーモードだと鳴らないことがあります。</p>
+  <div id="list"></div>
+</main>
+<script>
+let ctx = null, master = null, noiseBuffer = null;
+
+const ensure = () => {
+    if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = 0.6;
+        master.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+};
+
+const envelope = (gain, t, attack, peak, decay) => {
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(peak, t + attack);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
+};
+
+const tone = (freq, { type = 'triangle', delay = 0, attack = 0.004, decay = 0.3, peak = 0.2, lowpass = 0, bend = 0, vibrato = 0 } = {}) => {
+    const c = ensure();
+    const t = c.currentTime + delay;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    if (bend) osc.frequency.exponentialRampToValueAtTime(bend, t + decay);
+    if (vibrato) {
+        const lfo = c.createOscillator();
+        const depth = c.createGain();
+        lfo.frequency.value = vibrato;
+        depth.gain.value = freq * 0.012;
+        lfo.connect(depth);
+        depth.connect(osc.frequency);
+        lfo.start(t);
+        lfo.stop(t + attack + decay + 0.05);
+    }
+    envelope(gain, t, attack, peak, decay);
+    if (lowpass) {
+        const filter = c.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = lowpass;
+        osc.connect(filter);
+        filter.connect(gain);
+    } else {
+        osc.connect(gain);
+    }
+    gain.connect(master);
+    osc.start(t);
+    osc.stop(t + attack + decay + 0.05);
+};
+
+const noise = ({ delay = 0, attack = 0.002, decay = 0.1, peak = 0.1, type = 'highpass', freq = 4000, q = 1 } = {}) => {
+    const c = ensure();
+    if (!noiseBuffer) {
+        noiseBuffer = c.createBuffer(1, c.sampleRate, c.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    }
+    const t = c.currentTime + delay;
+    const src = c.createBufferSource();
+    const filter = c.createBiquadFilter();
+    const gain = c.createGain();
+    src.buffer = noiseBuffer;
+    src.loop = true;
+    filter.type = type;
+    filter.frequency.value = freq;
+    filter.Q.value = q;
+    envelope(gain, t, attack, peak, decay);
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(master);
+    src.start(t);
+    src.stop(t + attack + decay + 0.05);
+};
+
+// D メジャーの和音（D2 D3 F#3 A3 D4）
+const CHORD = [146.83, 293.66, 369.99, 440.0, 587.33];
+
+const SOUNDS = [
+    {
+        name: '今の音（チャーン）',
+        desc: '低い太鼓の一打に、D-durの和音と、きらめく高い音を重ねたもの。',
+        play() {
+            tone(110, { type: 'sine', decay: 0.6, peak: 0.35, bend: 70 });
+            CHORD.forEach((f) => tone(f, { type: 'sawtooth', delay: 0.02, attack: 0.03, decay: 1.4, peak: 0.045, lowpass: 1400 }));
+            noise({ delay: 0.02, attack: 0.01, decay: 0.9, peak: 0.05, type: 'highpass', freq: 6000 });
+        },
+    },
+    {
+        name: 'オーケストラ・ヒット',
+        desc: '全楽器が、ジャンと1回だけ、鋭く鳴る音。短く切れるので、テンポがよい。',
+        play() {
+            [73.42, 146.83, 220, 293.66, 369.99, 440, 587.33, 739.99, 880].forEach((f) =>
+                tone(f, { type: 'sawtooth', attack: 0.006, decay: 0.55, peak: 0.05, lowpass: 2600 }));
+            tone(90, { type: 'sine', decay: 0.4, peak: 0.4, bend: 55 });
+            noise({ attack: 0.004, decay: 0.18, peak: 0.08, type: 'bandpass', freq: 3000 });
+        },
+    },
+    {
+        name: 'ジャーン（終演の和音）',
+        desc: '演奏の最後の和音。太鼓とシンバルも入って、長く響く。いちばん派手。',
+        play() {
+            [73.42, ...CHORD, 739.99, 880].forEach((f) =>
+                tone(f, { type: 'sawtooth', attack: 0.05, decay: 2.2, peak: 0.045, lowpass: 2000 }));
+            tone(80, { type: 'sine', decay: 1.0, peak: 0.45, bend: 50 });
+            noise({ attack: 0.01, decay: 1.8, peak: 0.07, type: 'highpass', freq: 5000 });
+        },
+    },
+    {
+        name: 'シンバル',
+        desc: 'シャーンと鳴るだけ。和音がないので、音程を気にしなくてよい。',
+        play() {
+            noise({ attack: 0.003, decay: 1.6, peak: 0.13, type: 'highpass', freq: 3500 });
+            noise({ attack: 0.003, decay: 1.0, peak: 0.08, type: 'bandpass', freq: 8000, q: 2 });
+            tone(1200, { type: 'sine', decay: 0.4, peak: 0.02 });
+        },
+    },
+    {
+        name: 'ティンパニ・ロール → ドン',
+        desc: '太鼓が、だんだん速く連打されて、最後にドン。長さは約1.3秒。',
+        play() {
+            let t = 0;
+            for (let i = 0; i < 14; i++) {
+                tone(98, { type: 'sine', delay: t, decay: 0.18, peak: 0.08 + i * 0.012, bend: 80 });
+                t += 0.09 - i * 0.003;
+            }
+            tone(98, { type: 'sine', delay: 1.0, decay: 1.0, peak: 0.5, bend: 58 });
+            tone(196, { type: 'sine', delay: 1.0, decay: 0.5, peak: 0.1 });
+            noise({ delay: 1.0, attack: 0.004, decay: 0.12, peak: 0.1, type: 'lowpass', freq: 500 });
+        },
+    },
+    {
+        name: 'トランペットのファンファーレ',
+        desc: 'ラ・レ・ファ#・高いラの、短い4音。「はじまり」の合図のような音。',
+        play() {
+            [[440, 0, 0.16], [587.33, 0.14, 0.16], [739.99, 0.28, 0.16], [880, 0.44, 0.9]].forEach(([f, d, len]) =>
+                tone(f, { type: 'sawtooth', delay: d, attack: 0.02, decay: len, peak: 0.08, lowpass: 2400 }));
+            tone(220, { type: 'sawtooth', delay: 0.44, attack: 0.03, decay: 0.9, peak: 0.04, lowpass: 1200 });
+        },
+    },
+    {
+        name: 'ハープのグリッサンド',
+        desc: 'ハープが、下から上へ、ポロロロンと駆け上がる音。やさしい雰囲気。',
+        play() {
+            [293.66, 329.63, 369.99, 440, 493.88, 587.33, 659.25, 739.99, 880, 987.77, 1174.66].forEach((f, i) =>
+                tone(f, { type: 'triangle', delay: i * 0.05, attack: 0.004, decay: 1.1, peak: 0.13, lowpass: 4500 }));
+            tone(1174.66, { type: 'sine', delay: 0.55, decay: 1.4, peak: 0.05 });
+        },
+    },
+    {
+        name: 'チューニングのラ（オーボエ）',
+        desc: '開演前の、音合わせのラの音。ビブラートがかかる。長さは約1.3秒。',
+        play() {
+            tone(440, { type: 'sawtooth', attack: 0.12, decay: 1.1, peak: 0.09, lowpass: 1700, vibrato: 5.5 });
+            tone(880, { type: 'sawtooth', attack: 0.15, decay: 1.0, peak: 0.02, lowpass: 2400, vibrato: 5.5 });
+        },
+    },
+    {
+        name: '拍手',
+        desc: 'ぱちぱちぱち、と、拍手が広がって、静まる。長さは約1.8秒。',
+        play() {
+            const total = 1.8;
+            for (let i = 0; i < 110; i++) {
+                const t = Math.random() * total;
+                const shape = Math.sin(Math.PI * (t / total)) ** 0.8; // 始まりと終わりは、まばらに
+                if (Math.random() > shape) continue;
+                noise({ delay: t, attack: 0.001, decay: 0.02 + Math.random() * 0.03, peak: 0.05 + Math.random() * 0.06, type: 'bandpass', freq: 1800 + Math.random() * 2500, q: 1.2 });
+            }
+        },
+    },
+    {
+        name: 'チーン（ベル）',
+        desc: '受付のベルのような、澄んだ高い音。控えめで、短い。',
+        play() {
+            [[1, 0.16, 1.6], [2.76, 0.07, 1.0], [5.4, 0.04, 0.6], [8.93, 0.02, 0.4]].forEach(([r, peak, decay]) =>
+                tone(1046.5 * r, { type: 'sine', attack: 0.002, decay, peak }));
+        },
+    },
+];
+
+const list = document.getElementById('list');
+SOUNDS.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '聞く';
+    btn.addEventListener('click', () => { ensure(); s.play(); });
+    const text = document.createElement('div');
+    text.innerHTML = `<div class="name"><span class="no">${i + 1}</span>${s.name}</div><div class="desc">${s.desc}</div>`;
+    row.append(btn, text);
+    list.append(row);
+});
+</script>
+</body>
+</html>
