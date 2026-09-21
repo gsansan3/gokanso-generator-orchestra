@@ -27,10 +27,14 @@ python -m http.server 8000
 | `style.css` | 見た目 |
 | `app.js` | リールの動き、効果音、アンケート用紙（画像）の描画、オプション |
 | `reel-data.js` | ネタのデータ（リール3本の文章と、アンケート用紙に載る公演名） |
+| `fonts/` | 手書き風フォント TekitouPoem（必要な文字だけに絞ったもの）と、そのライセンス文 |
+| `tools/build-font-subsets.py` | `fonts/` の中身を作るスクリプト |
 
 ## ネタを足す
 
 ネタは `reel-data.js` だけを編集すれば足せます。書き方のルールは、そのファイルの冒頭に書いてあります。
+
+`fonts/` に入っていない漢字を使うと、その文字は別のフォント（Yomogi）で描かれます。JIS第1水準の漢字なら、自動で読み込まれるので、そのまま使えます。それ以外の漢字を使う場合は、`fonts/README.md` の手順で、フォントを作り直してください。
 
 ## 公開URLの設定
 
@@ -39,4 +43,5 @@ Xへのシェアには、開いているページのURLが自動で入ります�
 ## 補足
 
 - 効果音は、音源ファイルを使わず、ブラウザ内で合成しています。
-- フォントは Google Fonts（Shippori Mincho B1、Yomogi）を読み込みます。
+- 印刷された部分のフォントは Google Fonts（Shippori Mincho B1）を、代わりのフォントは Yomogi を読み込みます。
+- 感想とお名前の手書き文字は、[TekitouPoem](https://github.com/Hagi42/TekitouPoem-Font)（Cockatrice Digital、SIL Open Font License 1.1）です。詳しくは `fonts/README.md` を見てください。

@@ -271,8 +271,9 @@
     const CARD_H = 1350;
     // 印刷された部分は明朝、書き込まれた感想は手書き風のフォントにする
     const PRINT_FONT = '"Shippori Mincho B1", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif';
-    const HAND_FONT = '"Yomogi", "Yu Kyokasho", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif';
-    // Yomogi は太さが1種類だけ。別の太さを指定すると、ブラウザが無理に太らせて字がつぶれるので、400 にそろえる。
+    // 手書き風のフォント。TekitouPoem（fonts/ に置いてある）を使い、そこにない珍しい文字だけ Yomogi で描く。
+    const HAND_FONT = '"TekitouPoem", "Yomogi", "Yu Kyokasho", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif';
+    // サイトに置いているのは、TekitouPoem の Regular だけ。別の太さを指定すると、ブラウザが無理に太らせて字がつぶれるので、400 にそろえる。
     const HAND_WEIGHT = 400;
     const CARD_COLORS = {
         paper: '#fbf8ef',
@@ -482,15 +483,32 @@
 
     // Webフォントは文字ごとに分割配信されるので、カードに使う文字を指定して先に読み込む。
     // 回線が遅いときに待ちすぎないよう、6秒で諦めて代替フォントで描く。
-    const loadCardFonts = (printText, handText) =>
+    // TekitouPoem は、使う文字が入っているファイルだけが読み込まれる（お名前に、通常のファイルにない漢字が
+    // あるときだけ、漢字のファイルも読み込む）。それでも足りない文字は Yomogi で描くので、お名前の分だけ読み込む。
+    const loadCardFonts = (printText, handText, nameText) =>
         Promise.race([
             Promise.all([
                 document.fonts.load(`800 40px ${PRINT_FONT}`, printText),
                 document.fonts.load(`700 40px ${PRINT_FONT}`, printText),
-                document.fonts.load(`${HAND_WEIGHT} 40px ${HAND_FONT}`, handText),
+                document.fonts.load(`${HAND_WEIGHT} 40px "TekitouPoem"`, handText),
+                ...(nameText ? [document.fonts.load(`${HAND_WEIGHT} 40px "Yomogi"`, nameText)] : []),
             ]).catch(() => {}),
             new Promise((resolve) => setTimeout(resolve, 6000)),
         ]);
+
+    // TekitouPoem で描ける文字か（fonts/tekitoupoem.css の unicode-range を、そのまま使って調べる）
+    let tekitouRanges = null;
+    const tekitouCovers = (ch) => {
+        if (!tekitouRanges) {
+            tekitouRanges = [...document.fonts]
+                .filter((face) => face.family.replace(/["']/g, '') === 'TekitouPoem')
+                .flatMap((face) => face.unicodeRange.split(','))
+                .map((part) => part.trim().replace(/^U\+/i, '').split('-').map((hex) => parseInt(hex, 16)))
+                .map(([from, to]) => [from, to === undefined ? from : to]);
+        }
+        const codePoint = ch.codePointAt(0);
+        return tekitouRanges.some(([from, to]) => codePoint >= from && codePoint <= to);
+    };
 
     // オプション画面の値。'none'（無回答）ならどれにも印を付けない（-1）。
     // そうでなければ、選択肢の番号（満足度は1〜5の数字）。
@@ -501,7 +519,8 @@
         const sentence = parts.map((text, i) => text + CARD_CONNECTORS[i]).join('');
         await loadCardFonts(
             `0123456789${Object.values(CARD_TEXT).join('')}${concert}${CARD_APP_NAME}`,
-            sentence + options.name
+            sentence + options.name,
+            [...options.name].filter((ch) => !tekitouCovers(ch)).join('')
         );
 
         const canvas = document.createElement('canvas');
@@ -923,7 +942,7 @@
         for (const list of Object.values(REEL_DATA)) {
             for (const text of list) [...text].forEach((ch) => chars.add(ch));
         }
-        document.fonts.load(`${HAND_WEIGHT} 40px ${HAND_FONT}`, [...chars].join('')).catch(() => {});
+        document.fonts.load(`${HAND_WEIGHT} 40px "TekitouPoem"`, [...chars].join('')).catch(() => {});
     };
     const prefetchWhenIdle = () => {
         if ('requestIdleCallback' in window) requestIdleCallback(prefetchHandFont, { timeout: 4000 });
