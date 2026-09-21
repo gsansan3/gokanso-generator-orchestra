@@ -443,6 +443,40 @@
         ctx.textAlign = 'center';
     };
 
+    // ペンでぐるっと囲んだ、手書きの丸。1周より少し多く回して、書き終わりが書き始めの外側に重なる。
+    // 線の太さは、書き始めと書き終わりで細く、途中で太くする。形は、描くたびに少し変わる。
+    const drawHandCircle = (ctx, cx, cy, rx, ry) => {
+        const steps = 64;
+        const turns = 1.1 + Math.random() * 0.08;
+        const start = -Math.PI * 0.8 + jitter(0.35);
+        const tilt = -0.1 + jitter(0.1);
+        const p1 = Math.random() * 6.28;
+        const p2 = Math.random() * 6.28;
+        const point = (i) => {
+            const t = i / steps;
+            const angle = start - t * turns * Math.PI * 2; // 左回り
+            const scale = 0.9 + 0.2 * t + 0.035 * Math.sin(2 * angle + p1) + 0.025 * Math.sin(3 * angle + p2);
+            const x = rx * scale * Math.cos(angle);
+            const y = ry * scale * Math.sin(angle);
+            return [cx + x * Math.cos(tilt) - y * Math.sin(tilt), cy + x * Math.sin(tilt) + y * Math.cos(tilt)];
+        };
+        ctx.save();
+        ctx.strokeStyle = CARD_COLORS.pen;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        let prev = point(0);
+        for (let i = 1; i <= steps; i++) {
+            const cur = point(i);
+            ctx.lineWidth = 2.6 + 2.6 * Math.pow(Math.sin(Math.PI * (i / steps)), 0.6) + jitter(0.25);
+            ctx.beginPath();
+            ctx.moveTo(prev[0], prev[1]);
+            ctx.lineTo(cur[0], cur[1]);
+            ctx.stroke();
+            prev = cur;
+        }
+        ctx.restore();
+    };
+
     // 1〜5の数字。選んだ番号には、ペンで手書きの丸を付ける（印刷された丸は付けない）
     const drawSatisfactionRow = (ctx, label, note, chosen, y) => {
         ctx.textAlign = 'left';
@@ -457,19 +491,7 @@
             ctx.fillStyle = CARD_COLORS.ink;
             ctx.fillText(String(n), cx, y + 1);
 
-            if (n === chosen) {
-                ctx.save();
-                ctx.strokeStyle = CARD_COLORS.pen;
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.ellipse(cx, y, 33, 29, -0.12, 0, Math.PI * 2 * 0.97);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.ellipse(cx + 1, y - 1, 31, 31, 0.2, 0.4, Math.PI * 2 + 0.3);
-                ctx.stroke();
-                ctx.restore();
-            }
+            if (n === chosen) drawHandCircle(ctx, cx, y, 34, 30);
         }
 
         ctx.textAlign = 'left';
