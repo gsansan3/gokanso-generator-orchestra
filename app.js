@@ -291,7 +291,7 @@
     const CARD_APP_NAME = 'ご感想ジェネレータ　～オーケストラ版～';
     // （演奏会の名前は、ネタとして reel-data.js の CONCERT_TITLES から選ぶ）
     const CARD_TEXT = {
-        title: 'アンケート',
+        title: '来場者アンケート',
         visits: 'ご来場回数',
         age: 'ご年代',
         satisfaction: '本日の満足度',
@@ -546,7 +546,7 @@
         // 見出し
         // 演奏会の名前。長いときは、幅に収まるまで文字を小さくする。
         const concertSpacing = 8;
-        let concertSize = 30;
+        let concertSize = 36;
         const concertWidth = () => {
             ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
             return [...concert].reduce((sum, ch) => sum + ctx.measureText(ch).width, 0) + concertSpacing * (concert.length - 1);
@@ -555,9 +555,9 @@
         ctx.fillStyle = CARD_COLORS.accent;
         ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
         drawSpaced(ctx, concert, cx, 108, concertSpacing);
-        // 「アンケート」の題字。大きすぎたので、以前（80px）の0.7倍にしてある。
+        // 「来場者アンケート」の題字
         ctx.fillStyle = CARD_COLORS.ink;
-        ctx.font = `800 56px ${PRINT_FONT}`;
+        ctx.font = `800 45px ${PRINT_FONT}`;
         drawSpaced(ctx, CARD_TEXT.title, cx, 172, 16);
         ctx.strokeStyle = CARD_COLORS.ink;
         ctx.lineWidth = 2;
@@ -700,7 +700,7 @@
     const OPTIONS_KEY = 'orchestra-happening:options';
     const NAME_MAX_LENGTH = 10;
     // 初期値は、どれも真ん中の選択肢（2〜5回、40代、満足度3）と、お名前「拍手 喝采」
-    const DEFAULT_OPTIONS = { visits: '1', age: '2', satisfaction: '3', name: '拍手 喝采' };
+    const DEFAULT_OPTIONS = { visits: '1', age: '2', satisfaction: '3', name: '桶　好夫' };
     // 選択肢の並びは、カードに描く選択肢（CARD_VISITS など）と同じ
     const OPTION_FIELDS = [
         { key: 'visits', labels: CARD_VISITS },

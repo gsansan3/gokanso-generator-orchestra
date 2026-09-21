@@ -39,10 +39,10 @@ FULLWIDTH = (
 
 
 # 初期のお名前（app.js の DEFAULT_OPTIONS.name）で使う漢字。最初から読み込むほうに入れておく
-DEFAULT_NAME_CHARS = set("拍手喝采")
+DEFAULT_NAME_CHARS = set("桶好夫") | {chr(0x3000)}  # 0x3000 は、姓と名のあいだの全角スペース
 
 # フォントファイルの版番号。ブラウザに古いファイルを使い続けられないよう、作り直したら新しい値にする（index.html の ?v= と同じ値にする）
-FONT_VERSION = "20260921u"
+FONT_VERSION = "20260921v"
 
 
 def reel_chars(reel_data_path):
