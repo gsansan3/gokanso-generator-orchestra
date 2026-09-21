@@ -1,8 +1,10 @@
 (() => {
     'use strict';
 
-    // Xに投稿するときに、感想の下に付けるハッシュタグ
+    // Xに投稿するときに、感想の下に付けるハッシュタグと、アプリのURL
     const SHARE_HASHTAG = '#ご感想ジェネレータ';
+    // 公開しているアプリのURL（ローカルで試すときも、この値を付ける）
+    const SHARE_URL = 'https://gsansan3.github.io/gokanso-generator-orchestra/';
 
     const STORAGE_KEY = 'orchestra-happening:sound';
     const REEL_KEYS = ['reel1', 'reel2', 'reel3'];
@@ -861,15 +863,15 @@
         link.remove();
     };
 
-    // Xの投稿画面を開く。文章は「公演名の感想 + 感想 + ハッシュタグ」で、URLは付けない。
+    // Xの投稿画面を開く。文章は「公演名の感想 + 感想 + ハッシュタグ + アプリのURL」。
     // 画像は付けられないので、「画像を保存」した画像を、投稿画面で自分で添付してもらう。
+    // 画像を付けなければ、URLの先の ogp.png が、Xのカードとして出る。
     const share = () => {
         if (!currentSentence) return;
-        const title = currentConcert ? `${currentConcert}の感想
-
-` : '';
-        const text = `${title}${currentSentence}
-${SHARE_HASHTAG}`;
+        const lines = [];
+        if (currentConcert) lines.push(`${currentConcert}の感想`, '');
+        lines.push(currentSentence, SHARE_HASHTAG, SHARE_URL);
+        const text = lines.join('\n');
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     };
 
