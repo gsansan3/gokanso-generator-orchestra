@@ -42,7 +42,7 @@ FULLWIDTH = (
 DEFAULT_NAME_CHARS = set("拍手喝采")
 
 # フォントファイルの版番号。ブラウザに古いファイルを使い続けられないよう、作り直したら新しい値にする（index.html の ?v= と同じ値にする）
-FONT_VERSION = "20260921t"
+FONT_VERSION = "20260921u"
 
 
 def reel_chars(reel_data_path):
