@@ -562,7 +562,7 @@
         // 見出し
         // 演奏会の名前。長いときは、幅に収まるまで文字を小さくする。
         const concertSpacing = 8;
-        let concertSize = 45; // 題字（来場者アンケート）と同じ大きさ。長い公演名は、下で幅に収まるまで小さくする
+        let concertSize = 45; // 長い公演名は、下で幅に収まるまで小さくする。題字（来場者アンケート）も、同じ大きさにそろえる
         const concertWidth = () => {
             ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
             return [...concert].reduce((sum, ch) => sum + ctx.measureText(ch).width, 0) + concertSpacing * (concert.length - 1);
@@ -571,9 +571,9 @@
         ctx.fillStyle = CARD_COLORS.accent;
         ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
         drawSpaced(ctx, concert, cx, 108, concertSpacing);
-        // 「来場者アンケート」の題字
+        // 「来場者アンケート」の題字（公演名と同じ大きさ）
         ctx.fillStyle = CARD_COLORS.ink;
-        ctx.font = `800 45px ${PRINT_FONT}`;
+        ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
         drawSpaced(ctx, CARD_TEXT.title, cx, 172, 16);
         ctx.strokeStyle = CARD_COLORS.ink;
         ctx.lineWidth = 2;
@@ -647,24 +647,32 @@
         });
         ctx.textAlign = 'center';
 
-        // 名前欄（空欄）と注意書き
+        // お名前の行（見出しも、手書きの名前も、以前の1.5倍）と注意書き
+        const nameLabelSize = 39;
+        const nameSize = 60;
+        const nameLineY = boxBottom + 88;
         ctx.textAlign = 'left';
         ctx.fillStyle = CARD_COLORS.ink;
-        ctx.font = `800 26px ${PRINT_FONT}`;
-        ctx.fillText(CARD_TEXT.name, boxLeft, boxBottom + 58);
+        ctx.font = `800 ${nameLabelSize}px ${PRINT_FONT}`;
+        ctx.fillText(CARD_TEXT.name, boxLeft, nameLineY - 20);
+        const nameLineLeft = boxLeft + ctx.measureText(CARD_TEXT.name).width + 28;
         ctx.strokeStyle = CARD_COLORS.ink;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(boxLeft + 260, boxBottom + 74);
-        ctx.lineTo(boxRight, boxBottom + 74);
+        ctx.moveTo(nameLineLeft, nameLineY);
+        ctx.lineTo(boxRight, nameLineY);
         ctx.stroke();
         if (options.name) {
-            // 入力した名前は、下線の真ん中に書く
+            // 入力した名前は、下線の真ん中に書く。長くて下線に収まらないときは、収まるまで小さくする
             ctx.save();
             ctx.fillStyle = CARD_COLORS.pen;
-            ctx.font = handFont(40);
+            ctx.font = handFont(nameSize);
             ctx.textAlign = 'center';
-            ctx.translate((boxLeft + 260 + boxRight) / 2, boxBottom + 56);
+            const room = boxRight - nameLineLeft - 24;
+            const width = ctx.measureText(options.name).width;
+            const size = width > room ? Math.floor((nameSize * room) / width) : nameSize;
+            ctx.font = handFont(size);
+            ctx.translate((nameLineLeft + boxRight) / 2, nameLineY - size * 0.45);
             ctx.rotate(jitter(0.02));
             ctx.fillText(options.name, 0, 0);
             ctx.restore();
@@ -672,12 +680,12 @@
         ctx.textAlign = 'center';
         ctx.fillStyle = CARD_COLORS.muted;
         ctx.font = `700 22px ${PRINT_FONT}`;
-        ctx.fillText(CARD_TEXT.footnote, cx, boxBottom + 122);
+        ctx.fillText(CARD_TEXT.footnote, cx, boxBottom + 140);
 
         // 足もと
         ctx.fillStyle = CARD_COLORS.ink;
         ctx.font = `800 28px ${PRINT_FONT}`;
-        drawSpaced(ctx, CARD_APP_NAME, cx, boxBottom + 176, 4);
+        drawSpaced(ctx, CARD_APP_NAME, cx, boxBottom + 194, 4);
 
         return new Promise((resolve, reject) => {
             canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/png');
