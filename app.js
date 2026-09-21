@@ -723,6 +723,8 @@
 
     const OPTIONS_KEY = 'orchestra-happening:options';
     const NAME_MAX_LENGTH = 10;
+    // お名前を整える。制御文字と、半端な文字（絵文字の途中で切れたもの）を取り除き、10文字（絵文字なども1文字）までにする
+    const cleanName = (text) => [...String(text).replace(/[\p{Cc}\p{Cs}]/gu, '')].slice(0, NAME_MAX_LENGTH).join('');
     // 初期値は、どれも真ん中の選択肢（2〜5回、40代、満足度3）と、お名前「桶　好夫」。
     // autoOpen は、回し終わったときにアンケート用紙を自動で開くか（'on' / 'off'）
     const DEFAULT_OPTIONS = { visits: '1', age: '2', satisfaction: '3', name: '桶　好夫', autoOpen: 'on' };
@@ -743,7 +745,7 @@
             const allowed = [NO_ANSWER, ...field.labels.map((_, i) => optionValue(field, i))];
             if (allowed.includes(raw[field.key])) result[field.key] = raw[field.key];
         }
-        if (typeof raw.name === 'string') result.name = raw.name.slice(0, NAME_MAX_LENGTH);
+        if (typeof raw.name === 'string') result.name = cleanName(raw.name);
         if (raw.autoOpen === 'on' || raw.autoOpen === 'off') result.autoOpen = raw.autoOpen;
         return result;
     };
@@ -977,7 +979,7 @@
         saveOptions();
     });
     optionName.addEventListener('input', () => {
-        options.name = optionName.value.slice(0, NAME_MAX_LENGTH);
+        options.name = cleanName(optionName.value);
         optionsChanged = true;
         saveOptions();
     });
