@@ -448,13 +448,13 @@
     const drawHandCircle = (ctx, cx, cy, rx, ry) => {
         const steps = 64;
         const turns = 1.1 + Math.random() * 0.08;
-        const start = -Math.PI * 0.8 + jitter(0.35);
+        const start = Math.PI * 0.5 + jitter(0.25); // 真下あたりから書き始める
         const tilt = -0.1 + jitter(0.1);
         const p1 = Math.random() * 6.28;
         const p2 = Math.random() * 6.28;
         const point = (i) => {
             const t = i / steps;
-            const angle = start - t * turns * Math.PI * 2; // 左回り
+            const angle = start - t * turns * Math.PI * 2; // 左回り（真下から、右、上、左の順）
             const scale = 0.9 + 0.2 * t + 0.035 * Math.sin(2 * angle + p1) + 0.025 * Math.sin(3 * angle + p2);
             const x = rx * scale * Math.cos(angle);
             const y = ry * scale * Math.sin(angle);
