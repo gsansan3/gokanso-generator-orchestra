@@ -542,3 +542,58 @@ body::before {
         padding-bottom: 12px;
     }
 }
+
+/* オプション画面も、背の低い画面（iPhone SE など）で1画面に収める。
+   余白と、選択肢ボタンの縦の大きさを詰める。押しやすさのため、ボタンの高さは約40px以上を保つ。 */
+@media (max-height: 700px) {
+    .options-panel {
+        padding: 16px 18px 14px;
+    }
+
+    .options-panel .gate-title {
+        margin-bottom: 8px;
+        font-size: 19px;
+    }
+
+    .options-lead {
+        margin: 0 0 10px;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .option-group {
+        margin-bottom: 8px;
+    }
+
+    .option-group legend,
+    .option-name > span {
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+
+    .option-choices {
+        gap: 6px;
+    }
+
+    .chip span {
+        padding: 10px 11px;
+        font-size: 13px;
+    }
+
+    .option-name input {
+        padding: 8px 12px;
+    }
+
+    .options-actions {
+        margin-top: 4px;
+    }
+
+    .options-actions .button {
+        padding-top: 11px;
+        padding-bottom: 11px;
+    }
+
+    #options-reset {
+        min-height: 40px;
+    }
+}
