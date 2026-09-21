@@ -124,6 +124,40 @@ body::before {
     left: 0;
 }
 
+/* 権利表記。画面の下に、目立たないように置く（押すと作者のXへ） */
+.copyright {
+    position: fixed;
+    right: 0;
+    bottom: calc(6px + env(safe-area-inset-bottom));
+    left: 0;
+    text-align: center;
+    pointer-events: none;
+}
+
+.copyright a {
+    display: inline-block;
+    padding: 6px 12px;
+    color: var(--text);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    opacity: 0.35;
+    text-decoration: none;
+    pointer-events: auto;
+}
+
+.copyright a:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+/* とても背の低い画面（横向きのスマホなど）では、リールに重ならないよう、固定をやめる */
+@media (max-height: 480px) {
+    .copyright {
+        position: static;
+        padding-bottom: 12px;
+    }
+}
+
 /* ---- リール ---- */
 
 .reels {
