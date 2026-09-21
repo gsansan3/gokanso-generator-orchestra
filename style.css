@@ -8,7 +8,7 @@
     /* リール1本の高さ。基本は幅に合わせる（76〜112px） */
     --card-h: clamp(76px, 17vw, 112px);
     /* リール以外（タイトル・ボタン・余白）が使う高さの合計。画面に収まるようリールを縮める計算に使う */
-    --fixed-h: 386px;
+    --fixed-h: 396px;
 }
 
 /* 背の低い画面（iPhone SE など）では、1画面に収まるよう、画面の高さに合わせてリールを縮める。
@@ -80,7 +80,7 @@ body::before {
 .subtitle {
     display: block;
     margin-top: 6px;
-    font-size: 0.5em;
+    font-size: 0.75em;
     font-weight: 700;
     letter-spacing: 0.2em;
 }
@@ -506,8 +506,8 @@ body::before {
    --fixed-h は、ここで詰めたあとの、リール以外の高さの合計。 */
 @media (max-height: 700px) {
     :root {
-        /* 実際のリール以外の高さは約310px。30px分の余裕を見て、Safariのバーの高さの違いなどに備える。 */
-        --fixed-h: 340px;
+        /* 実際のリール以外の高さは約320px。30px分の余裕を見て、Safariのバーの高さの違いなどに備える。 */
+        --fixed-h: 350px;
     }
 
     .app {
