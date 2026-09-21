@@ -48,10 +48,11 @@ python -m http.server 8000
 
 （感想）
 #ご感想ジェネレータ
-https://gsansan3.github.io/gokanso-generator-orchestra/
+https://gsansan3.github.io/gokanso-generator-orchestra/?v=1
 ```
 
 ハッシュタグとURLは、`app.js` の冒頭の `SHARE_HASHTAG` と `SHARE_URL` で変えられます。
+URLの末尾の `?v=1` は、Xのカードの記憶よけです。Xは、一度読んだURLの結果を、しばらく覚えているので、カードが出ないときは、この数字を進めます（アプリは、この文字列を無視して、同じ画面を出します）。
 
 Xの投稿画面を開くリンクでは画像を付けられないので、アンケート用紙の画像は、先に「画像を保存」で保存して、投稿画面で自分で添付します。画像を添付しない投稿には、URLの先の `ogp.png` が、Xのカードとして出ます（画像を添付すると、カードは出ません）。
 

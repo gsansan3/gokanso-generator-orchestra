@@ -3,8 +3,10 @@
 
     // Xに投稿するときに、感想の下に付けるハッシュタグと、アプリのURL
     const SHARE_HASHTAG = '#ご感想ジェネレータ';
-    // 公開しているアプリのURL（ローカルで試すときも、この値を付ける）
-    const SHARE_URL = 'https://gsansan3.github.io/gokanso-generator-orchestra/';
+    // 公開しているアプリのURL（ローカルで試すときも、この値を付ける）。
+    // 末尾の ?v=1 は、Xのカードの記憶よけ。Xは、一度読んだURLの結果（カードなし、を含む）を、しばらく覚えている。
+    // メタタグを入れる前に読まれたURLでは、カードが出なかったので、別のURLとして読み直させる。カードが出ないときは、この数字を進める。
+    const SHARE_URL = 'https://gsansan3.github.io/gokanso-generator-orchestra/?v=1';
 
     const STORAGE_KEY = 'orchestra-happening:sound';
     const REEL_KEYS = ['reel1', 'reel2', 'reel3'];
