@@ -314,7 +314,6 @@
         visits: 'ご来場回数',
         age: 'ご年代',
         satisfaction: '本日の満足度',
-        satisfactionNote: '1＝低い　5＝高い',
         free: 'ご意見・ご感想',
         name: 'お名前（任意）',
         footnote: 'ご協力ありがとうございます。いただいたご意見は、今後の参考にいたします。',
@@ -481,7 +480,7 @@
     };
 
     // 1〜5の数字。選んだ番号には、ペンで手書きの丸を付ける（印刷された丸は付けない）
-    const drawSatisfactionRow = (ctx, label, note, chosen, y) => {
+    const drawSatisfactionRow = (ctx, label, chosen, y) => {
         ctx.textAlign = 'left';
         ctx.fillStyle = CARD_COLORS.ink;
         ctx.font = `800 26px ${PRINT_FONT}`;
@@ -497,10 +496,6 @@
             if (n === chosen) drawHandCircle(ctx, cx, y, 34, 30);
         }
 
-        ctx.textAlign = 'left';
-        ctx.fillStyle = CARD_COLORS.muted;
-        ctx.font = `700 20px ${PRINT_FONT}`;
-        ctx.fillText(note, 790, y);
         ctx.textAlign = 'center';
     };
 
@@ -590,7 +585,7 @@
         // 選択式の設問（回答はオプション画面の設定。無回答なら印を付けない）
         drawChoiceRow(ctx, CARD_TEXT.visits, CARD_VISITS, answerOf(options.visits), 306);
         drawChoiceRow(ctx, CARD_TEXT.age, CARD_AGES, answerOf(options.age), 376);
-        drawSatisfactionRow(ctx, CARD_TEXT.satisfaction, CARD_TEXT.satisfactionNote, answerOf(options.satisfaction), 448);
+        drawSatisfactionRow(ctx, CARD_TEXT.satisfaction, answerOf(options.satisfaction), 448);
 
         // 自由記述欄
         const boxLeft = 90;
