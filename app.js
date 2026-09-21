@@ -546,7 +546,7 @@
         // 見出し
         // 演奏会の名前。長いときは、幅に収まるまで文字を小さくする。
         const concertSpacing = 8;
-        let concertSize = 36;
+        let concertSize = 45; // 題字（来場者アンケート）と同じ大きさ。長い公演名は、下で幅に収まるまで小さくする
         const concertWidth = () => {
             ctx.font = `800 ${concertSize}px ${PRINT_FONT}`;
             return [...concert].reduce((sum, ch) => sum + ctx.measureText(ch).width, 0) + concertSpacing * (concert.length - 1);
