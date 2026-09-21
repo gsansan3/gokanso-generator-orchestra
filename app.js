@@ -865,34 +865,50 @@
         link.remove();
     };
 
-    // 画面の下に、数秒だけ表示するお知らせ
+    // 画面の上に、しばらく表示するお知らせ。
+    // Xの投稿画面が別のタブで開くと、この画面が見えなくなるので、戻ってきたときにも数秒出す。
     let toastTimer = 0;
-    const showToast = (message) => {
-        shareToast.textContent = message;
-        shareToast.hidden = false;
+    const hideToastLater = (ms) => {
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => {
             shareToast.hidden = true;
-        }, 6000);
+        }, ms);
     };
+    const showToast = (message) => {
+        shareToast.textContent = message;
+        shareToast.hidden = false;
+        hideToastLater(60000);
+    };
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && !shareToast.hidden) hideToastLater(8000);
+    });
 
     // Xにシェアする。文章は「感想 + ハッシュタグ」で、URLは付けない。
     // Xの投稿画面を開くリンクは、画像を付けられないので、次のように使い分ける。
-    //  ・スマホ: 端末の共有画面を開く。Xを選ぶと、画像と文章が付いた投稿画面になる。
-    //  ・パソコンなど: 画像をコピーして、Xの投稿画面を開く。投稿欄に貼り付けてもらう。
-    //    コピーできないときは、画像を保存して、添付してもらう。
+    //  ・共有画面が使えるスマホ: 端末の共有画面を開く。Xを選ぶと、画像と文章が付いた投稿画面になる。
+    //  ・それ以外: 画像をコピーして、Xの投稿画面を開く。投稿欄に貼り付けてもらう。
+    //    コピーできないときは、画像の保存を案内する（スマホでは、勝手に保存しない）。
+    // 共有画面が使えなかったときは、理由の短い記号をお知らせの末尾に付ける（原因を調べるため）。
     const share = async () => {
         if (!currentSentence) return;
-        const text = `${currentSentence}\n${SHARE_HASHTAG}`;
+        const text = `${currentSentence}
+${SHARE_HASHTAG}`;
         const file = cardImageBlob ? new File([cardImageBlob], 'gokanso.png', { type: 'image/png' }) : null;
+        const mobile = matchMedia('(pointer: coarse)').matches;
 
-        if (file && matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
+        let reason = '';
+        if (!file) reason = 'nofile';
+        else if (!mobile) reason = 'desktop';
+        else if (!navigator.share) reason = 'noshare';
+        else if (!navigator.canShare) reason = 'nocanshare';
+        else if (!navigator.canShare({ files: [file] })) reason = 'nofiles';
+        else {
             try {
                 await navigator.share({ files: [file], text });
                 return;
             } catch (e) {
                 if (e && e.name === 'AbortError') return; // 共有画面を、自分で閉じた
-                // 共有画面が開けなかったときは、下のやり方に切り替える
+                reason = 'err-' + (e && e.name ? e.name : 'unknown');
             }
         }
 
@@ -900,15 +916,22 @@
         if (cardImageBlob && navigator.clipboard && window.ClipboardItem) {
             try {
                 await navigator.clipboard.write([new ClipboardItem({ 'image/png': cardImageBlob })]);
-                message = '画像をコピーしました。投稿欄に貼り付けてください';
+                message = mobile
+                    ? '画像をコピーしました。投稿欄を長押しして、貼り付けてください'
+                    : '画像をコピーしました。投稿欄で Ctrl+V を押して、貼り付けてください';
             } catch (e) {
-                // コピーできなかったときは、下で画像を保存する
+                // コピーできなかったときは、下で保存を案内する
             }
         }
-        if (!message && cardUrl) {
-            saveCard();
-            message = '画像を保存しました。投稿に添付してください';
+        if (!message) {
+            if (mobile) {
+                message = '画像は付けられませんでした。「画像を保存」してから、投稿に添付してください';
+            } else if (cardUrl) {
+                saveCard();
+                message = '画像を保存しました。投稿に添付してください';
+            }
         }
+        if (mobile && reason) message += `（${reason}）`;
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
         if (message) showToast(message);
     };
