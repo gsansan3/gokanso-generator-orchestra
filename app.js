@@ -826,7 +826,8 @@
         optionsClose.focus();
     };
 
-    // 閉じるとき、オプションを変えていて結果が出ていれば、新しい設定でカードを描き直して見せる
+    // 閉じるとき、用紙に関わるオプションを変えていて結果が出ていれば、新しい設定でカードを描き直す。
+    // 自動で開く設定のときは、描き直したカードを、そのまま見せる。
     const closeOptions = async () => {
         if (optionsModal.hidden) return;
         optionsModal.hidden = true;
@@ -834,16 +835,20 @@
         if (!optionsChanged || !currentParts || spinning) return;
         optionsChanged = false;
         try {
-            setCardBlob(await renderCard(currentParts, options, currentConcert));
-            openCard();
+            setCardBlob(await renderCard(currentParts, { ...options }, currentConcert));
+            if (options.autoOpen === 'on') openCard();
         } catch (e) {
             // 描き直せなくても、前のカードはそのまま見られる
         }
     };
 
+    // 回した回数。前の回のカードが、あとから届いて、今の回の表示を上書きしないように使う
+    let spinSerial = 0;
+
     const spin = async () => {
         if (spinning) return;
         spinning = true;
+        const serial = ++spinSerial;
         Sound.unlock();
 
         spinButton.disabled = true;
@@ -857,28 +862,42 @@
 
         // 結果は回す前に決まっているので、カードはリールが回っている間に描いておく。
         // 失敗しても、リールの結果はそのまま見られる。
-        const cardBlob = renderCard(results, options, currentConcert).catch(() => null);
+        // 描いている途中でオプションが変わっても影響しないよう、その時点の設定のコピーで描く。
+        const cardBlob = renderCard(results, { ...options }, currentConcert).catch(() => null);
 
         await Promise.all(reels.map((reel, i) => reel.spin(results[i], SPIN_MS[i], SPIN_ROWS[i])));
 
-        // 3つめが止まってから、リールどうしの間隔と同じだけ待って、
-        // 結果の効果音（ハープのタラらん → チャーン）を鳴らし、カードを開く。
-        // 画面を描き替える処理（カードを開く）で音が遅れないよう、音を先に鳴らす。
-        await wait(STOP_INTERVAL_MS);
-        const blob = await cardBlob;
-        Sound.result();
-        if (blob) {
-            setCardBlob(blob);
-            cardButton.hidden = false;
-            // 自動で開かない設定のときは、「アンケート用紙を見る」のボタンから開く
-            if (options.autoOpen === 'on') openCard();
-        } else {
-            cardUrl = '';
-        }
+        // カードができたときの処理。「アンケート用紙を見る」のボタンを出し、自動で開く設定なら開く。
+        const showCard = (blob) => {
+            if (serial !== spinSerial) return; // もう次の回が始まっている
+            if (blob) {
+                setCardBlob(blob);
+                cardButton.hidden = false;
+                if (options.autoOpen === 'on') openCard();
+            } else {
+                cardUrl = '';
+            }
+            optionsButton.disabled = false;
+        };
 
-        spinButton.disabled = false;
-        optionsButton.disabled = false;
-        spinning = false;
+        if (options.autoOpen === 'on') {
+            // 3つめが止まってから、リールどうしの間隔と同じだけ待って、
+            // 結果の効果音（ハープのタラらん → チャーン）を鳴らし、カードを開く。
+            // 画面を描き替える処理（カードを開く）で音が遅れないよう、音を先に鳴らす。
+            await wait(STOP_INTERVAL_MS);
+            const blob = await cardBlob;
+            Sound.result();
+            showCard(blob);
+            spinButton.disabled = false;
+            spinning = false;
+        } else {
+            // 自動で開かない設定のときは、待たずに、3つめが止まった瞬間に効果音を鳴らして、
+            // すぐに次を回せるようにする。カードは、できしだい、ボタンから開けるようにする。
+            Sound.result();
+            spinButton.disabled = false;
+            spinning = false;
+            cardBlob.then(showCard);
+        }
     };
 
     const saveCard = () => {
@@ -953,7 +972,8 @@
         const input = event.target;
         if (!input.matches('input[type="radio"]')) return;
         options[input.dataset.key] = input.value;
-        optionsChanged = true;
+        // 「自動で開く」は、用紙の中身に関係しないので、カードを描き直さなくてよい
+        if (input.dataset.key !== 'autoOpen') optionsChanged = true;
         saveOptions();
     });
     optionName.addEventListener('input', () => {
