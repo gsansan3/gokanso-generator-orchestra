@@ -396,8 +396,10 @@ body::before {
 }
 
 .modal-actions .button {
-    min-width: 140px;
-    padding: 11px 20px;
+    /* 「画像を保存」と「Xでシェア」は、同じ幅にそろえる */
+    width: 150px;
+    min-width: 0;
+    padding: 11px 12px;
     font-size: 16px;
 }
 
