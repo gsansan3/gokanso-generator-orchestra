@@ -861,11 +861,14 @@
         link.remove();
     };
 
-    // Xの投稿画面を開く。文章は「感想 + ハッシュタグ」で、URLは付けない。
+    // Xの投稿画面を開く。文章は「公演名の感想 + 感想 + ハッシュタグ」で、URLは付けない。
     // 画像は付けられないので、「画像を保存」した画像を、投稿画面で自分で添付してもらう。
     const share = () => {
         if (!currentSentence) return;
-        const text = `${currentSentence}
+        const title = currentConcert ? `${currentConcert}の感想
+
+` : '';
+        const text = `${title}${currentSentence}
 ${SHARE_HASHTAG}`;
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     };
