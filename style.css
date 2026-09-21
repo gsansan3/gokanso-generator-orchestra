@@ -653,6 +653,12 @@ body::before {
         flex: 0 0 auto;
     }
 
+    /* 自動で開く の ON / OFF は、同じ幅にそろえる */
+    .option-group[data-option="autoOpen"] .chip {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
     .chip span {
         white-space: nowrap;
     }

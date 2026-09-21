@@ -42,7 +42,7 @@ FULLWIDTH = (
 DEFAULT_NAME_CHARS = set("桶好夫") | {chr(0x3000)}  # 0x3000 は、姓と名のあいだの全角スペース
 
 # フォントファイルの版番号。ブラウザに古いファイルを使い続けられないよう、作り直したら新しい値にする（index.html の ?v= と同じ値にする）
-FONT_VERSION = "20260921z9"
+FONT_VERSION = "20260921zb"
 
 
 def reel_chars(reel_data_path):

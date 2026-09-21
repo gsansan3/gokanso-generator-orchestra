@@ -723,8 +723,9 @@
 
     const OPTIONS_KEY = 'orchestra-happening:options';
     const NAME_MAX_LENGTH = 10;
-    // 初期値は、どれも真ん中の選択肢（2〜5回、40代、満足度3）と、お名前「拍手 喝采」
-    const DEFAULT_OPTIONS = { visits: '1', age: '2', satisfaction: '3', name: '桶　好夫' };
+    // 初期値は、どれも真ん中の選択肢（2〜5回、40代、満足度3）と、お名前「桶　好夫」。
+    // autoOpen は、回し終わったときにアンケート用紙を自動で開くか（'on' / 'off'）
+    const DEFAULT_OPTIONS = { visits: '1', age: '2', satisfaction: '3', name: '桶　好夫', autoOpen: 'on' };
     // 選択肢の並びは、カードに描く選択肢（CARD_VISITS など）と同じ
     const OPTION_FIELDS = [
         { key: 'visits', labels: CARD_VISITS },
@@ -743,6 +744,7 @@
             if (allowed.includes(raw[field.key])) result[field.key] = raw[field.key];
         }
         if (typeof raw.name === 'string') result.name = raw.name.slice(0, NAME_MAX_LENGTH);
+        if (raw.autoOpen === 'on' || raw.autoOpen === 'off') result.autoOpen = raw.autoOpen;
         return result;
     };
 
@@ -766,23 +768,26 @@
     };
 
     // 選択肢のボタンを作る
-    OPTION_FIELDS.forEach((field) => {
-        const container = optionsModal.querySelector(`.option-group[data-option="${field.key}"] .option-choices`);
-        const choices = [{ value: NO_ANSWER, label: '無回答' }, ...field.labels.map((label, i) => ({ value: optionValue(field, i), label }))];
+    const addChoices = (key, choices) => {
+        const container = optionsModal.querySelector(`.option-group[data-option="${key}"] .option-choices`);
         for (const { value, label } of choices) {
             const chip = document.createElement('label');
             chip.className = 'chip';
             const input = document.createElement('input');
             input.type = 'radio';
-            input.name = `option-${field.key}`;
+            input.name = `option-${key}`;
             input.value = value;
-            input.dataset.key = field.key;
+            input.dataset.key = key;
             const text = document.createElement('span');
             text.textContent = label;
             chip.append(input, text);
             container.append(chip);
         }
+    };
+    OPTION_FIELDS.forEach((field) => {
+        addChoices(field.key, [{ value: NO_ANSWER, label: '無回答' }, ...field.labels.map((label, i) => ({ value: optionValue(field, i), label }))]);
     });
+    addChoices('autoOpen', [{ value: 'on', label: 'ON' }, { value: 'off', label: 'OFF' }]);
 
     // 現在のオプションを、画面の入力欄に反映する
     const syncOptionInputs = () => {
@@ -865,7 +870,8 @@
         if (blob) {
             setCardBlob(blob);
             cardButton.hidden = false;
-            openCard();
+            // 自動で開かない設定のときは、「アンケート用紙を見る」のボタンから開く
+            if (options.autoOpen === 'on') openCard();
         } else {
             cardUrl = '';
         }

@@ -26,8 +26,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Yomogi&display=swap" rel="stylesheet">
     <!-- ?v= は、ブラウザに古いファイルを使い続けられないための版番号。style.css・app.js・reel-data.js（と fonts/ の中身）を変えたら、4か所とも新しい値にする -->
-    <link rel="stylesheet" href="fonts/tekitoupoem.css?v=20260921z9">
-    <link rel="stylesheet" href="style.css?v=20260921z9">
+    <link rel="stylesheet" href="fonts/tekitoupoem.css?v=20260921zb">
+    <link rel="stylesheet" href="style.css?v=20260921zb">
 </head>
 <body>
     <main class="app">
@@ -86,6 +86,11 @@
                 <input type="text" id="option-name" autocomplete="off" placeholder="空欄のままなら、白紙になります">
             </label>
 
+            <fieldset class="option-group" data-option="autoOpen">
+                <legend>回し終わったら、アンケート用紙を自動で開く</legend>
+                <div class="option-choices"></div>
+            </fieldset>
+
             <div class="options-actions">
                 <button type="button" id="options-close" class="button primary">閉じる</button>
             </div>
@@ -103,7 +108,7 @@
         </div>
     </div>
 
-    <script src="reel-data.js?v=20260921z9"></script>
-    <script src="app.js?v=20260921z9"></script>
+    <script src="reel-data.js?v=20260921zb"></script>
+    <script src="app.js?v=20260921zb"></script>
 </body>
 </html>
